@@ -1,3 +1,11 @@
+/* Config Table Column Sizing */
+#config table {
+    width: auto;
+}
+#config td:first-child, #config th:first-child {
+    width: 1%;
+    white-space: nowrap;
+}
 /* Theme Colors - CC3322 as base using Adobe Kuler */
 /* PDF Styles */
 @page {
@@ -90,10 +98,14 @@ table table th {
     font-weight: bold;
     text-align: right;
 }
+#config tr td:first-child {
+    font-weight: bold;
+    text-align: right;
+}
 .types table {
     width: 100%;
 }
-.types table tbody > tr:hover {
+#schema table tbody > tr:hover {
     /* background: #E3391A; */
     background: #f3e24a;
     /* color: #FFF !important; */

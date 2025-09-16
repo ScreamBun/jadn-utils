@@ -33,12 +33,23 @@ class HtmlConverter:
             meta = None
             types = None
 
+
+        html_meta = ''
+        html_config = ''
+        
         if meta:
-            df_meta = pd.DataFrame([meta]).transpose().reset_index()
-            df_meta.columns = ["Field", "Value"]
-            html_meta = df_meta.to_html(index=False, classes="no-border", header=False)
-        else:
-            html_meta = ''
+            meta_copy = dict(meta)  # avoid mutating original
+            config = meta_copy.pop('config', None)
+            if meta_copy:
+                df_meta = pd.DataFrame([meta_copy]).transpose().reset_index()
+                df_meta['index'] = df_meta['index'].apply(lambda x: x.title() if isinstance(x, str) else x)
+                df_meta.columns = ["Field", "Value"]
+                html_meta = df_meta.to_html(index=False, classes="no-border", header=False)
+            if config is not None:
+                if isinstance(config, dict):
+                    df_config = pd.DataFrame([config]).transpose().reset_index()
+                    df_config.columns = ["Config Field", "Value"]
+                    html_config = df_config.to_html(index=False, classes="no-border", header=False)
 
         html_root_types = ''
         html_types = ''
@@ -56,6 +67,15 @@ class HtmlConverter:
 
         theme_css = get_theme_css()
 
+        config_section = ''
+        if html_config:
+            config_section = (
+                '<h4>Config</h4>\n'
+                '<div id="config">\n'
+                f'{html_config}\n'
+                '</div>\n'
+            )
+
         html = (
             '<!DOCTYPE html>\n'
             '<html lang="en">\n'
@@ -71,6 +91,7 @@ class HtmlConverter:
                         '<div id="meta">\n'
                             f'{html_meta}\n'
                         '</div>\n'
+                        f'{config_section}'
                         '<h3>Types</h3>\n'
                         '<div class="types">\n'
                             f'{html_root_types}\n'

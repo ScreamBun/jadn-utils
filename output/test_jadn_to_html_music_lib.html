@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <title>Music Library</title>
 <style>
+/* Config Table Column Sizing */
+#config table {
+    width: auto;
+}
+#config td:first-child, #config th:first-child {
+    width: 1%;
+    white-space: nowrap;
+}
 /* Theme Colors - CC3322 as base using Adobe Kuler */
 /* PDF Styles */
 @page {
@@ -96,10 +104,14 @@ table table th {
     font-weight: bold;
     text-align: right;
 }
+#config tr td:first-child {
+    font-weight: bold;
+    text-align: right;
+}
 .types table {
     width: 100%;
 }
-.types table tbody > tr:hover {
+#schema table tbody > tr:hover {
     /* background: #E3391A; */
     background: #f3e24a;
     /* color: #FFF !important; */
@@ -144,28 +156,63 @@ table table th {
 <table border="1" class="dataframe no-border">
   <tbody>
     <tr>
-      <td>title</td>
+      <td>Title</td>
       <td>Music Library</td>
     </tr>
     <tr>
-      <td>package</td>
+      <td>Package</td>
       <td>http://fake-audio.org/music-lib</td>
     </tr>
     <tr>
-      <td>version</td>
+      <td>Version</td>
       <td>1.1</td>
     </tr>
     <tr>
-      <td>description</td>
+      <td>Description</td>
       <td>This information model defines a library of audio tracks, organized by album, with associated metadata regarding each track. It is modeled on the types of library data maintained by common websites and music file tag editors.</td>
     </tr>
     <tr>
-      <td>license</td>
+      <td>License</td>
       <td>CC0-1.0</td>
     </tr>
     <tr>
-      <td>roots</td>
+      <td>Roots</td>
       <td>[Library]</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h4>Config</h4>
+<div id="config">
+<table border="1" class="dataframe no-border">
+  <tbody>
+    <tr>
+      <td>$MaxBinary</td>
+      <td>255</td>
+    </tr>
+    <tr>
+      <td>$MaxString</td>
+      <td>5555</td>
+    </tr>
+    <tr>
+      <td>$MaxElements</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>$Sys</td>
+      <td>$</td>
+    </tr>
+    <tr>
+      <td>$TypeName</td>
+      <td>^[A-Za-z][-_$A-Za-z0-9]{0,63}$</td>
+    </tr>
+    <tr>
+      <td>$FieldName</td>
+      <td>^[A-Za-z][-_A-Za-z0-9]{0,63}$</td>
+    </tr>
+    <tr>
+      <td>$NSID</td>
+      <td>^[A-Za-z][A-Za-z0-9]{0,7}$</td>
     </tr>
   </tbody>
 </table>

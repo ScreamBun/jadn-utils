@@ -5,7 +5,16 @@ j_schema = {
     "version": "1.1",
     "description": "This information model defines a library of audio tracks, organized by album, with associated metadata regarding each track. It is modeled on the types of library data maintained by common websites and music file tag editors.",
     "license": "CC0-1.0",
-    "roots": ["Library"]
+    "roots": ["Library"],
+    "config": {
+      "$MaxBinary": 255,
+      "$MaxString": 5555,
+      "$MaxElements": 100,
+      "$Sys": "$",
+      "$TypeName": "^[A-Za-z][-_$A-Za-z0-9]{0,63}$",
+      "$FieldName": "^[A-Za-z][-_A-Za-z0-9]{0,63}$",
+      "$NSID": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    }    
   },
   "types": [
     ["Library", "MapOf", ["+Barcode", "*Album", "{1"], "Top level of the library is a map of CDs by barcode", []],
