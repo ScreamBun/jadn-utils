@@ -1,11 +1,12 @@
 import pandas as pd
 import json
-import os
 
 from jadnutils.utils.conversion_utils import build_types_html, get_theme_css
 from jadnutils.utils.jadn_utils import get_title
 
 class HtmlConverter:
+    jadn_data: dict = {}
+    
     def __init__(self, jadn_data):
         self.jadn_data = jadn_data
 

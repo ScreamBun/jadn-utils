@@ -7,5 +7,9 @@ setup(
     install_requires=[
         "pytest",
         "pandas"
-    ]    
+    ],
+    include_package_data=True,
+    package_data={
+        "jadnutils.support": ["theme.css"],
+    },
 )
