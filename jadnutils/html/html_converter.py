@@ -1,0 +1,85 @@
+import pandas as pd
+import json
+import os
+
+from jadnutils.utils.conversion_utils import build_types_html, get_theme_css
+from jadnutils.utils.jadn_utils import get_title
+
+class HtmlConverter:
+    def __init__(self, jadn_data):
+        self.jadn_data = jadn_data
+
+    def jadn_to_html(self, **kwargs):
+        """
+        Convert JADN JSON data to an HTML representation.
+        :param json_data: JADN JSON data as a string or dictionary
+        :param run_validation: Whether to validate the JSON data (default: True)
+        :return: HTML string representing the JADN schema
+        """
+        
+        run_validation = kwargs.get('run_validation', True)
+        if run_validation:
+            data = json.loads(self.jadn_data)
+        else:
+            data = self.jadn_data
+        
+        html_title = get_title(data)
+
+        if isinstance(data, dict):
+            meta = data.get('meta', None)
+            types = data.get('types', None)
+        else:
+            meta = None
+            types = None
+
+        if meta:
+            df_meta = pd.DataFrame([meta]).transpose().reset_index()
+            df_meta.columns = ["Field", "Value"]
+            html_meta = df_meta.to_html(index=False, classes="no-border", header=False)
+        else:
+            html_meta = ''
+
+        html_root_types = ''
+        html_types = ''
+        
+        if types:
+            
+            root_types = meta['roots']
+            root_type_defs = [t for t in types if t[0] in root_types]
+            
+            html_root_types = build_types_html(root_type_defs)
+            # Remove root types from types to avoid duplication
+            types = [t for t in types if t[0] not in root_types]
+            
+            html_types += build_types_html(types) # Multiple tables
+
+        theme_css = get_theme_css()
+
+        html = (
+            '<!DOCTYPE html>\n'
+            '<html lang="en">\n'
+            '<head>\n'
+            '<meta charset="UTF-8">\n'
+            f'<title>{html_title}</title>\n'
+            f'<style>\n{theme_css}\n</style>\n'
+            '</head>\n'
+                '<body>\n'
+                    '<div id="schema">\n'
+                        f'<h2>JADN Schema: {html_title}</h2>\n'
+                        '<h3>Meta</h3>\n'
+                        '<div id="meta">\n'
+                            f'{html_meta}\n'
+                        '</div>\n'
+                        '<h3>Types</h3>\n'
+                        '<div class="types">\n'
+                            f'{html_root_types}\n'
+                        '</div>\n'
+                        '<div class="types">\n'
+                            f'{html_types}\n'
+                        '</div>\n'             
+                    '</div>\n'
+                '</body>\n'
+            '</html>'
+        )
+        
+        return html

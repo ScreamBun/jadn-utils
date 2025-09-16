@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Music Library</title>
+<style>
+/* Theme Colors - CC3322 as base using Adobe Kuler */
+/* PDF Styles */
+@page {
+    size: letter portrait;
+    margin: 16pt;
+}
+@media print {
+    #schema {
+        max-width: auto;
+    }
+}
+/* Standard Styles */
+body {
+    /* font-family: Cambria, serif; */
+    font-family: "Lucida Sans Unicode", sans-serif;
+    margin-bottom: 50px;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: Calibri, sans-serif;
+}
+h3 {
+    margin-bottom: 5px;
+    border-bottom: 1px solid #e3391a;
+}
+h4 {
+    margin-bottom: 2px;
+    border-bottom: 1px solid #969493;
+}
+
+table, table * {
+    border: none !important;
+    border-collapse: separate !important;
+}
+table {
+    width: 100%;
+    border-spacing: 0;
+}
+th {
+    text-align: left;
+    background: #f8f8f8;
+}
+/* Alternate row background for types tables */
+table tr:nth-child(even) {
+    background: #f0f0f0;
+}
+table tr:nth-child(odd) {
+    background: #fff;
+}
+
+table {
+    font-family: "Lucida Sans Unicode", sans-serif;
+    /* font-size: 14px; */
+    border-collapse: collapse;
+    text-align: left;
+}
+table caption {
+    color: #C32 !important;
+    text-align: left;
+    font-weight: bold;
+}
+table thead {
+    color: #E3391A !important;
+    border-bottom: 1px solid #BBB;
+}
+table tbody tr td {
+    padding-right: 5px;
+}
+table tbody tr td:last-child {
+    padding-right: auto;
+}
+table td,
+table table th {
+    line-height: 1.15;
+    vertical-align: top;
+}
+
+.dataframe {
+    font-size: small;
+}
+
+/* Specific styles */
+#schema {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+#meta tr td:first-child {
+    font-weight: bold;
+    text-align: right;
+}
+.types table {
+    width: 100%;
+}
+.types table tbody > tr:hover {
+    /* background: #E3391A; */
+    background: #f3e24a;
+    /* color: #FFF !important; */
+    cursor: pointer;
+}
+.description {
+  margin-top: 5px
+}
+.n {
+    min-width: 2em;
+    text-align: right;
+}
+.s {
+    min-width: 7.5em;
+    text-align: left;
+}
+.d {
+    min-width: 30em;
+    text-align: left;
+}
+.b {
+    font-weight: bold;
+}
+.h {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 0;
+}
+/* Javascript Hash Styles */
+.hash {
+    background: #E3391A;
+    color: #FFF !important;
+}
+
+</style>
+</head>
+<body>
+<div id="schema">
+<h2>JADN Schema: Music Library</h2>
+<h3>Meta</h3>
+<div id="meta">
+<table border="1" class="dataframe no-border">
+  <tbody>
+    <tr>
+      <td>title</td>
+      <td>Music Library</td>
+    </tr>
+    <tr>
+      <td>package</td>
+      <td>http://fake-audio.org/music-lib</td>
+    </tr>
+    <tr>
+      <td>version</td>
+      <td>1.1</td>
+    </tr>
+    <tr>
+      <td>description</td>
+      <td>This information model defines a library of audio tracks, organized by album, with associated metadata regarding each track. It is modeled on the types of library data maintained by common websites and music file tag editors.</td>
+    </tr>
+    <tr>
+      <td>license</td>
+      <td>CC0-1.0</td>
+    </tr>
+    <tr>
+      <td>roots</td>
+      <td>[Library]</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h3>Types</h3>
+<div class="types">
+<h4 id='Library'>Library</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MapOf</td>
+      <td>[+Barcode, *Album, {1]</td>
+      <td>Top level of the library is a map of CDs by barcode</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="types">
+<h4 id='Barcode'>Barcode</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>String</td>
+      <td>[%^\d{12}$]</td>
+      <td>A UPC-A barcode is 12 digits</td>
+    </tr>
+  </tbody>
+</table><h4 id='Album'>Album</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Record</td>
+      <td>[]</td>
+      <td>model for the album</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>album_artist</td>
+      <td><a href="#Artist">Artist</a></td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>album_title</td>
+      <td>String</td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>pub_data</td>
+      <td><a href="#Publication-Data">Publication-Data</a></td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>tracks</td>
+      <td><a href="#Track">Track</a></td>
+      <td>[]0]</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>total_tracks</td>
+      <td>Integer</td>
+      <td>[{1]</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>cover_art</td>
+      <td><a href="#Image">Image</a></td>
+      <td>[[0]</td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Publication-Data'>Publication-Data</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Record</td>
+      <td>[]</td>
+      <td>who and when of publication</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>publisher</td>
+      <td>String</td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>release_date</td>
+      <td>String</td>
+      <td>[/date]</td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Image'>Image</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Record</td>
+      <td>[]</td>
+      <td>pretty picture for the album or track</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>image_format</td>
+      <td><a href="#Image-Format">Image-Format</a></td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>image_content</td>
+      <td>Binary</td>
+      <td>[]</td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Image-Format'>Image-Format</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Enumerated</td>
+      <td>[]</td>
+      <td>can only be one, but can extend list</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>PNG</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>JPG</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>GIF</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Artist'>Artist</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Record</td>
+      <td>[]</td>
+      <td>interesting information about a performer</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>artist_name</td>
+      <td>String</td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>instruments</td>
+      <td><a href="#Instrument">Instrument</a></td>
+      <td>[q, ]0]</td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Instrument'>Instrument</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Enumerated</td>
+      <td>[]</td>
+      <td>collection of instruments (non-exhaustive)</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>vocals</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>guitar</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>bass</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>drums</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>keyboards</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>percussion</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>brass</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>woodwinds</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>harmonica</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Track'>Track</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Record</td>
+      <td>[]</td>
+      <td>for each track there's a file with the audio and a metadata record</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>location</td>
+      <td><a href="#File-Path">File-Path</a></td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>metadata</td>
+      <td><a href="#Track-Info">Track-Info</a></td>
+      <td>[]</td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Track-Info'>Track-Info</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Record</td>
+      <td>[]</td>
+      <td>information about the individual audio tracks</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>track_number</td>
+      <td>Integer</td>
+      <td>[[1]</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>title</td>
+      <td>String</td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>length</td>
+      <td>Integer</td>
+      <td>[{1]</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>audio_format</td>
+      <td><a href="#Audio-Format">Audio-Format</a></td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>featured_artist</td>
+      <td><a href="#Artist">Artist</a></td>
+      <td>[q, [0, ]0]</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>track_art</td>
+      <td><a href="#Image">Image</a></td>
+      <td>[[0]</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>genre</td>
+      <td><a href="#Genre">Genre</a></td>
+      <td>[]</td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Audio-Format'>Audio-Format</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Enumerated</td>
+      <td>[]</td>
+      <td>can only be one, but can extend list</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>MP3</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>OGG</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>FLAC</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>MP4</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>AAC</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>WMA</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>WAV</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='Genre'>Genre</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Enumerated</td>
+      <td>[]</td>
+      <td>Enumeration of common genres</td>
+    </tr>
+  </tbody>
+</table>
+					</br><div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Id</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>rock</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>jazz</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>hip_hop</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>electronic</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>folk_country_world</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>classical</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>spoken_word</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table></div>
+					<h4 id='File-Path'>File-Path</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Name</th>
+      <th>Options</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>String</td>
+      <td>[]</td>
+      <td>local storage location of file with directory path from root, filename, and extension</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</body>
+</html>
