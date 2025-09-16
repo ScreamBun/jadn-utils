@@ -86,7 +86,7 @@ class HtmlConverter:
             '</head>\n'
                 '<body>\n'
                     '<div id="schema">\n'
-                        f'<h2>JADN Schema: {html_title}</h2>\n'
+                        f'<h2>{html_title}</h2>\n'
                         '<h3>Meta</h3>\n'
                         '<div id="meta">\n'
                             f'{html_meta}\n'
