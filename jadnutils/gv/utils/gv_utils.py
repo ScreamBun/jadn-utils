@@ -14,6 +14,19 @@ def get_type_opts(opts):
             opts_found.append(TYPE_OPTIONS[opt]['name'])
     return ', '.join(opts_found)
 
+def get_extends(opts):
+    """
+    Extract the extended node name from opts if any string starts with 'e'.
+    Args:
+        opts (list): List of option strings.
+    Returns:
+        str or None: The extended node name, or None if not found.
+    """
+    for opt in opts:
+        if isinstance(opt, str) and opt.startswith('e'):
+            return opt[1:]
+    return None
+
 def get_min_max_length(opts):
     """
     Extract minLength and maxLength from opts and return as a formatted string.

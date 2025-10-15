@@ -5,7 +5,7 @@ generic_schema = {
     "roots": ["Schema"]
   },
   "types": [
-    ["Schema", "Record", ["{1", "f", "q"], "", [
+    ["Schema", "Record", ["{1", "q", "f", "eRecord-Ext"], "", [
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""],
         [3, "field_value_3", "Enumerated-Name", [], ""],
@@ -34,6 +34,9 @@ generic_schema = {
       ]],
     ["MapOf-Name", "MapOf", ["*String", "+Integer", "{1", "}4", "q"], "", []],
     ["ArrayOf-Name", "ArrayOf", ["*String", "{3", "}6", "s"], "", []],
-    ["String-Name", "String", [], "", []]
+    ["String-Name", "String", [], "", []],
+    ["Record-Ext", "Record", [], "", [
+        [1, "field_value_1", "Integer", [], ""]
+      ]]
   ]
 }

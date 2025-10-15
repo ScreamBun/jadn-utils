@@ -1,7 +1,7 @@
 import pandas as pd
 from graphviz import Digraph
 
-from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label, get_min_max_length
+from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label, get_extends
 
 class GvGenerator:
 
@@ -28,7 +28,11 @@ class GvGenerator:
         
         for field in fields:
             if field[2] not in self.primitives:
-                dot.edge(row["name"], field[2], label=field[1])     
+                dot.edge(row["name"], field[2], label=field[1])
+           
+        extends = get_extends(opts)    
+        if extends is not None:
+                dot.edge(row["name"], extends, label="extends", style="dashed")
                 
     def build_map_node(self, row, type_label, dot, bgcolor="LightSkyBlue", shape="none"):
         fields = row["fields"]
