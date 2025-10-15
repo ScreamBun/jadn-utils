@@ -1,16 +1,53 @@
-def build_choice_label(name, fields, bgcolor):
+from jadnutils.utils.options import TYPE_OPTIONS
+
+def get_type_opts(opts):
     """
-    Build an HTML-like label for Choice Graphviz node.
+    Extract option names from opts using TYPE_OPTIONS, return as comma-delimited string.
     Args:
-        name (str): Node name.
-        fields (list): List of choice field tuples.
-        bgcolor (str): Background color.
+        opts (list): List of option strings.
     Returns:
-        str: HTML label string.
+        str: Comma-delimited option names.
     """
+    opts_found = []
+    for opt in opts:
+        if isinstance(opt, str) and opt in TYPE_OPTIONS and (opt.isalpha() or opt == "="):
+            opts_found.append(TYPE_OPTIONS[opt]['name'])
+    return ', '.join(opts_found)
+
+def get_min_max_length(opts):
+    """
+    Extract minLength and maxLength from opts and return as a formatted string.
+    Args:
+        opts (list): List of option strings.
+    Returns:
+        str: minLength..maxLength
+    """
+    minLength = None
+    maxLength = None
+    
+    for opt in opts:
+        if isinstance(opt, str):
+            if opt.startswith("{"):
+                num = opt[1:]
+                minLength = num if num.isdigit() else "0"
+            elif opt.startswith("}"):
+                num = opt[1:]
+                maxLength = num if num.isdigit() else "*"
+                
+    if minLength is None:
+        minLength = "0"
+        
+    if maxLength is None:
+        maxLength = "*"
+        
+    return f"{{{minLength}..{maxLength}}}"
+    # return f"{minLength}..{maxLength}"
+
+def build_choice_label(name, fields, opts, bgcolor):
+    type_opts = get_type_opts(opts)
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}: Choice</b></td></tr>
+    <tr><td cellpadding="4"><b>{name}</b>: Choice {type_opts}</td></tr>
     <hr/>
     '''
     for field in fields:
@@ -18,19 +55,11 @@ def build_choice_label(name, fields, bgcolor):
     label += "</table>>"
     return label
 
-def build_enum_label(name, enum_items, bgcolor):
-    """
-    Build an HTML-like label for Enumerated Graphviz node.
-    Args:
-        name (str): Node name.
-        enum_items (list): List of enum item tuples.
-        bgcolor (str): Background color.
-    Returns:
-        str: HTML label string.
-    """
+def build_enum_label(name, enum_items, opts, bgcolor):
+    type_opts = get_type_opts(opts)
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}: Enumerated</b></td></tr>
+    <tr><td cellpadding="4"><b>{name}</b>: Enumerated {type_opts}</td></tr>
     <hr/>
     '''
     for item in enum_items:
@@ -38,31 +67,16 @@ def build_enum_label(name, enum_items, bgcolor):
     label += "</table>>"
     return label
 
-def build_mapof_label(name, key_type, value_type, bgcolor):
-    """
-    Build an HTML-like label for MapOf Graphviz node.
-    Args:
-        name (str): Node name.
-        key_type (str): Key type for MapOf.
-        value_type (str): Value type for MapOf.
-        bgcolor (str): Background color.
-    Returns:
-        str: HTML label string.
-    """
+def build_mapof_label(name, key_type, value_type, opts, bgcolor):
+    min_max_len = get_min_max_length(opts)
+    type_opts = get_type_opts(opts)    
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td><b>{name}: MapOf({key_type if key_type else "?"}, {value_type if value_type else "?"})</b></td></tr>
+    <tr><td><b>{name}</b>: MapOf({key_type if key_type else "?"}, {value_type if value_type else "?"}) {min_max_len} {type_opts}</td></tr>
     </table>>'''
     return label
 
 def extract_mapof_types(opts=None):
-    """
-    Extract both key_type and value_type from MapOf opts.
-    Args:
-        opts (list): List of option strings.
-    Returns:
-        tuple: (key_type, value_type)
-    """
     if opts is None:
         opts = []
     key_type = None
@@ -76,13 +90,6 @@ def extract_mapof_types(opts=None):
     return key_type, value_type
 
 def extract_arrayof_value_type(opts=None):
-    """
-    Extract the value_type from ArrayOf opts.
-    Args:
-        opts (list): List of option strings.
-    Returns:
-        str or None: The value type if found, else None.
-    """
     if opts is None:
         opts = []
     value_type = None
@@ -91,35 +98,22 @@ def extract_arrayof_value_type(opts=None):
             value_type = opt[1:]
     return value_type
 
-def build_arrayof_label(name, value_type, bgcolor):
-    """
-    Build an HTML-like label for ArrayOf Graphviz node.
-    Args:
-        name (str): Node name.
-        value_type (str): Value type for ArrayOf.
-        bgcolor (str): Background color.
-    Returns:
-        str: HTML label string.
-    """
+def build_arrayof_label(name, value_type, opts, bgcolor):
+    min_max_len = get_min_max_length(opts)
+    type_opts = get_type_opts(opts)
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td><b>{name}: ArrayOf({value_type if value_type else "?"})</b></td></tr>
+    <tr><td><b>{name}</b>: ArrayOf({value_type if value_type else "?"}) {min_max_len} {type_opts}</td></tr>
     </table>>'''
     return label
 
-def build_table_label(name, type_label, bgcolor, fields = []):
-    """
-    Build an HTML-like label for Graphviz table node.
-    Args:
-        name (str): Node name.
-        type_label (str): Type label.
-        bgcolor (str): Background color.
-    Returns:
-        str: HTML label string.
-    """
+# Used by record, map, array
+def build_basic_label(name, type_label, opts, bgcolor, fields = []):
+    min_max_len = get_min_max_length(opts)
+    type_opts = get_type_opts(opts)
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}: {type_label}</b></td></tr>
+    <tr><td cellpadding="4"><b>{name}</b>: {type_label} {min_max_len} {type_opts}</td></tr>
     <hr/>
     '''
     for field in fields:

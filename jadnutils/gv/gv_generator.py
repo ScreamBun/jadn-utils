@@ -1,7 +1,7 @@
 import pandas as pd
 from graphviz import Digraph
 
-from jadnutils.gv.utils.gv_utils import build_table_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label
+from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label, get_min_max_length
 
 class GvGenerator:
 
@@ -12,50 +12,50 @@ class GvGenerator:
         self.style = style if style is not None else self.get_style()
         
     def build_primitive_edge(self, node_name, primitive_type, dot, label="is a"):
-        dot.edge(node_name, primitive_type, label=label)        
+        dot.edge(node_name, primitive_type, label=label)
         
     def build_primitive_nodes(self, types_df, dot):
         for _, row in types_df.iterrows():
             if row["type"] in self.primitives:
-                dot.edge(row["name"], row["type"], label="is a")      
+                dot.edge(row["name"], row["type"], label="is a")
         
     def build_record_node(self, row, type_label, dot, bgcolor="LightSkyBlue", shape="none"):
         fields = row["fields"]
-        label = build_table_label(row['name'], type_label, bgcolor, fields)
+        opts = row.get("opts", [])
+        label = build_basic_label(row['name'], type_label, opts, bgcolor, fields)
         
         dot.node(row["name"], label=label, shape=shape)
         
         for field in fields:
-            # if referenced type build connection edges
             if field[2] not in self.primitives:
                 dot.edge(row["name"], field[2], label=field[1])     
                 
     def build_map_node(self, row, type_label, dot, bgcolor="LightSkyBlue", shape="none"):
         fields = row["fields"]
-        label = build_table_label(row['name'], type_label, bgcolor, fields)
+        opts = row.get("opts", [])  
+        label = build_basic_label(row['name'], type_label, opts, bgcolor, fields)
         
         dot.node(row["name"], label=label, shape=shape)
         
         for field in fields:
-            # if referenced type build connection edges
             if field[2] not in self.primitives:
                 dot.edge(row["name"], field[2], label=field[1])                  
                 
     def build_array_node(self, row, type_label, dot, bgcolor="LightSkyBlue", shape="none"):
         fields = row["fields"]
-        label = build_table_label(row['name'], type_label, bgcolor, fields)
+        opts = row.get("opts", [])      
+        label = build_basic_label(row['name'], type_label, opts, bgcolor, fields)
         
         dot.node(row["name"], label=label, shape=shape)
         
         for field in fields:
-            # if referenced type build connection edges
             if field[2] not in self.primitives:
                 dot.edge(row["name"], field[2], label=field[1])                                  
                     
     def build_arrayof_node(self, row, dot, bgcolor="LightSkyBlue", shape="none"):
         opts = row.get("opts", [])
-        value_type = extract_arrayof_value_type(opts)
-        label = build_arrayof_label(row["name"], value_type, bgcolor)
+        value_type = extract_arrayof_value_type(opts) 
+        label = build_arrayof_label(row["name"], value_type, opts, bgcolor)
         
         dot.node(row["name"], label=label, shape=shape)
         
@@ -65,7 +65,7 @@ class GvGenerator:
     def build_mapof_node(self, row, dot, bgcolor="LightSkyBlue", shape="none"):
         opts = row["opts"]
         key_type, value_type = extract_mapof_types(opts)
-        label = build_mapof_label(row["name"], key_type, value_type, bgcolor)
+        label = build_mapof_label(row["name"], key_type, value_type, opts, bgcolor)
         
         dot.node(row["name"], label=label, shape=shape)
         
@@ -73,17 +73,22 @@ class GvGenerator:
             dot.edge(row["name"], key_type, label="key")
         if value_type and not (hasattr(self, "primitives") and value_type in self.primitives):
             dot.edge(row["name"], value_type, label="value")
-    
-    def build_enum_node(self, row, dot, bgcolor="palegreen", shape="none"):
-        enum_items = row["fields"]
-        label = build_enum_label(row["name"], enum_items, bgcolor)
-        dot.node(row["name"], label=label, shape=shape)
 
-    # TODO: Choice could have ref types as well
     def build_choice_node(self, row, dot, bgcolor="palegreen", shape="none"):
+        opts = row["opts"]
         fields = row["fields"]
-        label = build_choice_label(row["name"], fields, bgcolor)
+        label = build_choice_label(row["name"], fields, opts, bgcolor)
         dot.node(row["name"], label=label, shape=shape)
+        
+        for field in fields:
+            if field[2] not in self.primitives:
+                dot.edge(row["name"], field[2], label=field[1])        
+                
+    def build_enum_node(self, row, dot, bgcolor="palegreen", shape="none"):
+        opts = row["opts"]
+        enum_items = row["fields"]
+        label = build_enum_label(row["name"], enum_items, opts, bgcolor)
+        dot.node(row["name"], label=label, shape=shape)                
 
     def generate(self, *args, **kwargs):
         schema = self.schema

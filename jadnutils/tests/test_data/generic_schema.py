@@ -15,23 +15,25 @@ generic_schema = {
         [7, "field_value_7", "MapOf-Name", [], ""],
         [8, "field_value_8", "ArrayOf-Name", [], ""]
       ]],
-    ["Enumerated-Name", "Enumerated", [], "", [
+    ["Enumerated-Name", "Enumerated", ["f"], "", [
         [1, "field_value_1", ""],
         [2, "field_value_2", ""]
       ]],
-    ["Choice-Name", "Choice", [], "", [
+    ["Choice-Name", "Choice", ["a"], "", [
+        [1, "field_value_1", "String", [], ""],
+        [2, "field_value_2", "String", [], ""],
+        [3, "field_value_3", "String-Name", [], ""]
+      ]],
+    ["Map-Name", "Map", ["{3", "}6", "="], "", [
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]
       ]],
-    ["Map-Name", "Map", [], "", [
+    ["Array-Name", "Array", ["{3", "}5", "a"], "", [
         [1, "field_value_1", "String", [], ""],
-        [2, "field_value_2", "String", [], ""]
+        [2, "field_value_2", "String-Name", [], ""]
       ]],
-    ["Array-Name", "Array", [], "", [
-        [1, "field_value_1", "String", [], ""],
-        [2, "field_value_2", "String", [], ""]
-      ]],
-    ["MapOf-Name", "MapOf", ["+Integer", "*String"], "", []],
-    ["ArrayOf-Name", "ArrayOf", ["*String"], "", []]
+    ["MapOf-Name", "MapOf", ["*String", "+Integer", "{1", "}4", "q"], "", []],
+    ["ArrayOf-Name", "ArrayOf", ["*String", "{3", "}6", "s"], "", []],
+    ["String-Name", "String", [], "", []]
   ]
 }
