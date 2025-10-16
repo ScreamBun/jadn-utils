@@ -1,7 +1,7 @@
 import pandas as pd
 from graphviz import Digraph
 
-from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label, get_extends, get_restricts, get_pointer
+from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label, get_extends, get_restricts, get_pointer, get_enumerated
 
 class GvGenerator:
 
@@ -90,7 +90,11 @@ class GvGenerator:
         
         pointer = get_pointer(opts)
         if pointer is not None:       
-            dot.edge(row["name"], pointer, label="pointer", style="dashed")                     
+            dot.edge(row["name"], pointer, label="pointer", style="dashed")
+            
+        enumerated = get_enumerated(opts)
+        if enumerated is not None:       
+            dot.edge(row["name"], enumerated, label="enumerated", style="dashed")                                
 
     def generate(self, *args, **kwargs):
         schema = self.schema

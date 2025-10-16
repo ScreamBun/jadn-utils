@@ -15,7 +15,7 @@ generic_schema = {
         [7, "field_value_7", "MapOf-Name", [], ""],
         [8, "field_value_8", "ArrayOf-Name", [], ""]
       ]],
-    ["Enumerated-Name", "Enumerated", [">Enumerated-Extra"], "", []],
+    ["Enumerated-Name", "Enumerated", ["#Enumerated-Extra"], "", []],
     ["Choice-Name", "Choice", [], "", [
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]

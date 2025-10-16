@@ -26,6 +26,12 @@ def get_restricts(opts):
             return opt[1:]
     return None
 
+def get_enumerated(opts):
+    for opt in opts:
+        if isinstance(opt, str) and opt.startswith('#'):
+            return opt[1:]
+    return None
+
 def get_pointer(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('>'):
@@ -69,17 +75,22 @@ def build_choice_label(name, fields, opts, bgcolor):
 def build_enum_label(name, enum_items, opts, bgcolor):
     type_opts = get_type_opts(opts)
     pointer_type = get_pointer(opts)
+    enumerated_type = get_enumerated(opts)
     
-    pointer_str = None
+    pointer_str = ''
     if pointer_type is not None:
-        pointer_str = f'(pointer {pointer_type})'
+        pointer_str = f'(pointing to {pointer_type})'
+        
+    enumerated_str = ''
+    if enumerated_type is not None:
+        enumerated_str = f'(enumerated by {enumerated_type})'        
     
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}</b>: Enumerated {type_opts} {pointer_str}</td></tr>
+    <tr><td cellpadding="4"><b>{name}</b>: Enumerated {type_opts} {pointer_str} {enumerated_str}</td></tr>
     '''
     
-    if not pointer_str:
+    if not pointer_type and not enumerated_type:
         label += "<hr/>\n"
         for item in enum_items:
             label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
