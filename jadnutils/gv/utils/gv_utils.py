@@ -27,6 +27,19 @@ def get_extends(opts):
             return opt[1:]
     return None
 
+def get_restricts(opts):
+    """
+    Extract the extended node name from opts if any string starts with 'e'.
+    Args:
+        opts (list): List of option strings.
+    Returns:
+        str or None: The extended node name, or None if not found.
+    """
+    for opt in opts:
+        if isinstance(opt, str) and opt.startswith('r'):
+            return opt[1:]
+    return None
+
 def get_min_max_length(opts):
     """
     Extract minLength and maxLength from opts and return as a formatted string.
