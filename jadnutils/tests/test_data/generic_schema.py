@@ -6,7 +6,7 @@ generic_schema = {
   },
   "types": [
     ["Schema", "Record", ["{1", "rRecord-Restriction"], "", [
-        [1, "field_value_1", "String", [], ""],
+        [1, "field_value_1", "String", ["[0", "]1"], ""],
         [2, "field_value_2", "String", [], ""],
         [3, "field_value_3", "Enumerated-Name", [], ""],
         [4, "field_value_4", "Choice-Name", [], ""],

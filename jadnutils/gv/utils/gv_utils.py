@@ -51,26 +51,46 @@ def get_format(opts):
     return ''
 
 def get_min_max_length(opts):
-    minLength = ''
-    maxLength = ''
+    min_length = ''
+    max_length = ''
     
     for opt in opts:
         if isinstance(opt, str):
             if opt.startswith("{"):
                 num = opt[1:]
-                minLength = num if num.isdigit() else "0"
+                min_length = num if num.isdigit() else "1"
             elif opt.startswith("}"):
                 num = opt[1:]
-                maxLength = num if num.isdigit() else "*"
+                max_length = num if num.isdigit() else "*"
                 
-    if minLength is '':
-        minLength = "0"
+    if min_length == '' and max_length == '':
+        return ''
         
-    if maxLength is '':
-        maxLength = "*"
+    if max_length is '':
+        max_length = "*"
         
-    return f"{{{minLength}..{maxLength}}}"
-    # return f"{minLength}..{maxLength}"
+    return f"{{{min_length}..{max_length}}}"
+    
+def get_min_max_occurs(opts):
+    min_occurs = ''
+    max_occurs = ''
+    
+    for opt in opts:
+        if isinstance(opt, str):
+            if opt.startswith("["):
+                num = opt[1:]
+                min_occurs = num if num.isdigit() else "1"
+            elif opt.startswith("]"):
+                num = opt[1:]
+                max_occurs = num if num.isdigit() else "*"
+                
+    if min_occurs == '' and max_occurs == '':
+        return ''
+    
+    if max_occurs is '':
+        max_occurs = "*"
+        
+    return f"[{min_occurs}..{max_occurs}]"
 
 def build_choice_label(name, fields, opts, bgcolor):
     type_opts = get_type_opts(opts)
@@ -164,6 +184,7 @@ def build_basic_label(name, type_label, opts, bgcolor, fields = []):
     <hr/>
     '''
     for field in fields:
-        label += f'<tr><td align="left">{field[0]} {field[1]}: {field[2]}</td></tr>\n'
+        field_min_max_occurs = get_min_max_occurs(field[3])
+        label += f'<tr><td align="left">{field[0]} {field[1]}: {field[2]} {field_min_max_occurs}</td></tr>\n'
     label += "</table>>"
     return label
