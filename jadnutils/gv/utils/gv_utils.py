@@ -18,35 +18,41 @@ def get_combine(opts):
             if len(opt) > 1:
                 key = opt[1]
                 return CHOICE_OPTIONS.get(key)
-    return None
+    return ''
 
 def get_extends(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('e'):
             return opt[1:]
-    return None
+    return ''
 
 def get_restricts(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('r'):
             return opt[1:]
-    return None
+    return ''
 
 def get_enumerated(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('#'):
             return opt[1:]
-    return None
+    return ''
 
 def get_pointer(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('>'):
             return opt[1:]
-    return None
+    return ''
+
+def get_format(opts):
+    for opt in opts:
+        if isinstance(opt, str) and opt.startswith('/'):
+            return opt[1:]
+    return ''
 
 def get_min_max_length(opts):
-    minLength = None
-    maxLength = None
+    minLength = ''
+    maxLength = ''
     
     for opt in opts:
         if isinstance(opt, str):
@@ -57,10 +63,10 @@ def get_min_max_length(opts):
                 num = opt[1:]
                 maxLength = num if num.isdigit() else "*"
                 
-    if minLength is None:
+    if minLength is '':
         minLength = "0"
         
-    if maxLength is None:
+    if maxLength is '':
         maxLength = "*"
         
     return f"{{{minLength}..{maxLength}}}"
@@ -87,11 +93,11 @@ def build_enum_label(name, enum_items, opts, bgcolor):
     enumerated_type = get_enumerated(opts)
     
     pointer_str = ''
-    if pointer_type is not None:
+    if pointer_type is not '':
         pointer_str = f'(pointing to {pointer_type})'
         
     enumerated_str = ''
-    if enumerated_type is not None:
+    if enumerated_type is not '':
         enumerated_str = f'(enumerated by {enumerated_type})'
     
     label = f'''<
@@ -151,9 +157,10 @@ def build_arrayof_label(name, value_type, opts, bgcolor):
 def build_basic_label(name, type_label, opts, bgcolor, fields = []):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
+    format_opt = get_format(opts)
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}</b>: {type_label} {min_max_len} {type_opts}</td></tr>
+    <tr><td cellpadding="4"><b>{name}</b>: {type_label} {min_max_len} {type_opts} {format_opt}</td></tr>
     <hr/>
     '''
     for field in fields:

@@ -42,5 +42,5 @@ CHOICE_OPTIONS = {
     'A': 'allOf',
     'O': 'anyOf',
     'X': 'oneOf',
-    '?': 'noneOf'
+    'N': 'noneOf'
 }

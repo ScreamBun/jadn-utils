@@ -29,11 +29,11 @@ class GvGenerator:
                 dot.edge(row["name"], field[2], label=field[1])
            
         extends = get_extends(opts)    
-        if extends is not None:
+        if extends is not '':
             dot.edge(row["name"], extends, label="extends", style="dashed")
                 
         restricts = get_restricts(opts)    
-        if restricts is not None:       
+        if restricts is not '':       
             dot.edge(restricts, row["name"], label="restricts", style="dashed")                                             
                     
     def build_arrayof_node(self, row, dot, bgcolor="LightSkyBlue", shape="none"):
@@ -89,11 +89,11 @@ class GvGenerator:
         dot.node(row["name"], label=label, shape=shape)
         
         pointer = get_pointer(opts)
-        if pointer is not None:       
+        if pointer is not '':       
             dot.edge(row["name"], pointer, label="pointer", style="dashed")
             
         enumerated = get_enumerated(opts)
-        if enumerated is not None:       
+        if enumerated is not '':       
             dot.edge(row["name"], enumerated, label="enumerated", style="dashed")                                
 
     def generate(self, *args, **kwargs):

@@ -24,7 +24,7 @@ generic_schema = {
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]
       ]],
-    ["Array-Name", "Array", [], "", [
+    ["Array-Name", "Array", ["/ipv4-net"], "", [
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]
       ]],
