@@ -1,18 +1,24 @@
-from jadnutils.utils.options import TYPE_OPTIONS
+from jadnutils.utils.options import CHOICE_OPTIONS, TYPE_OPTIONS
 
 def get_type_opts(opts):
-    """
-    Extract option names from opts using TYPE_OPTIONS, return as comma-delimited string.
-    Args:
-        opts (list): List of option strings.
-    Returns:
-        str: Comma-delimited option names.
-    """
     opts_found = []
     for opt in opts:
-        if isinstance(opt, str) and opt in TYPE_OPTIONS and (opt.isalpha() or opt == "="):
+        if (
+            isinstance(opt, str)
+            and opt in TYPE_OPTIONS
+            and (opt.isalpha() or opt == "=")
+            and opt != "C"
+        ):
             opts_found.append(TYPE_OPTIONS[opt]['name'])
     return ', '.join(opts_found)
+
+def get_combine(opts):
+    for opt in opts:
+        if isinstance(opt, str) and opt.startswith('C'):
+            if len(opt) > 1:
+                key = opt[1]
+                return CHOICE_OPTIONS.get(key)
+    return None
 
 def get_extends(opts):
     for opt in opts:
@@ -62,9 +68,12 @@ def get_min_max_length(opts):
 
 def build_choice_label(name, fields, opts, bgcolor):
     type_opts = get_type_opts(opts)
+    combine_opt = get_combine(opts)
+    combine_str = f'(Combine {combine_opt})' if combine_opt else ''
+    
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}</b>: Choice {type_opts}</td></tr>
+    <tr><td cellpadding="4"><b>{name}</b>: Choice {type_opts} {combine_str}</td></tr>
     <hr/>
     '''
     for field in fields:
@@ -83,7 +92,7 @@ def build_enum_label(name, enum_items, opts, bgcolor):
         
     enumerated_str = ''
     if enumerated_type is not None:
-        enumerated_str = f'(enumerated by {enumerated_type})'        
+        enumerated_str = f'(enumerated by {enumerated_type})'
     
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">

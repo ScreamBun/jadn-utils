@@ -37,3 +37,10 @@ FIELD_OPTIONS = {
     'L': {'id': 76, 'unicode': '0x4c', 'name': 'link', 'type': 'Boolean', 'description': 'field is a link (foreign key) to an instance of FieldType'}
     # 'N': {'id': 78, 'unicode': '0x4e', 'name': 'not', 'type': 'Boolean', 'description': 'field is not an instance of FieldType, use Choice(anyOf)'}
 }
+
+CHOICE_OPTIONS = {
+    'A': 'allOf',
+    'O': 'anyOf',
+    'X': 'oneOf',
+    '?': 'noneOf'
+}
