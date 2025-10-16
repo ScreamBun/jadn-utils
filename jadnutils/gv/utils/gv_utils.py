@@ -103,7 +103,8 @@ def build_choice_label(name, fields, opts, bgcolor):
     <hr/>
     '''
     for field in fields:
-        label += f'<tr><td align="left">{field[0]} {field[1]} : {field[2]}</td></tr>\n'
+        field_min_max_occurs = get_min_max_occurs(field[3])
+        label += f'<tr><td align="left">{field[0]} {field[1]} : {field[2]} {field_min_max_occurs}</td></tr>\n'
     label += "</table>>"
     return label
 
