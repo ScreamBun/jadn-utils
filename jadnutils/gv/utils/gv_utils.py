@@ -15,39 +15,24 @@ def get_type_opts(opts):
     return ', '.join(opts_found)
 
 def get_extends(opts):
-    """
-    Extract the extended node name from opts if any string starts with 'e'.
-    Args:
-        opts (list): List of option strings.
-    Returns:
-        str or None: The extended node name, or None if not found.
-    """
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('e'):
             return opt[1:]
     return None
 
 def get_restricts(opts):
-    """
-    Extract the extended node name from opts if any string starts with 'e'.
-    Args:
-        opts (list): List of option strings.
-    Returns:
-        str or None: The extended node name, or None if not found.
-    """
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('r'):
             return opt[1:]
     return None
 
+def get_pointer(opts):
+    for opt in opts:
+        if isinstance(opt, str) and opt.startswith('>'):
+            return opt[1:]
+    return None
+
 def get_min_max_length(opts):
-    """
-    Extract minLength and maxLength from opts and return as a formatted string.
-    Args:
-        opts (list): List of option strings.
-    Returns:
-        str: minLength..maxLength
-    """
     minLength = None
     maxLength = None
     
@@ -83,14 +68,23 @@ def build_choice_label(name, fields, opts, bgcolor):
 
 def build_enum_label(name, enum_items, opts, bgcolor):
     type_opts = get_type_opts(opts)
+    pointer_type = get_pointer(opts)
+    
+    pointer_str = None
+    if pointer_type is not None:
+        pointer_str = f'(pointer {pointer_type})'
+    
     label = f'''<
     <table cellborder="0" cellpadding="1" cellspacing="1" bgcolor="{bgcolor}">
-    <tr><td cellpadding="4"><b>{name}</b>: Enumerated {type_opts}</td></tr>
-    <hr/>
+    <tr><td cellpadding="4"><b>{name}</b>: Enumerated {type_opts} {pointer_str}</td></tr>
     '''
-    for item in enum_items:
-        label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
-    label += "</table>>"
+    
+    if not pointer_str:
+        label += "<hr/>\n"
+        for item in enum_items:
+            label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
+    label += "</table>>\n"
+        
     return label
 
 def build_mapof_label(name, key_type, value_type, opts, bgcolor):
