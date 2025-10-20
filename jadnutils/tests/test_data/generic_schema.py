@@ -5,8 +5,8 @@ generic_schema = {
     "roots": ["Schema"]
   },
   "types": [
-    ["Schema", "Record", ["{1", "rRecord-Restriction"], "", [
-        [1, "field_value_1", "String", ["[0", "]1"], ""],
+    ["Schema", "Record", ["{1", "f", "q"], "", [
+        [1, "field_value_1", "String", ["w1", "x4"], ""],
         [2, "field_value_2", "String", [], ""],
         [3, "field_value_3", "Enumerated-Name", [], ""],
         [4, "field_value_4", "Choice-Name", [], ""],
@@ -15,8 +15,11 @@ generic_schema = {
         [7, "field_value_7", "MapOf-Name", [], ""],
         [8, "field_value_8", "ArrayOf-Name", [], ""]
       ]],
-    ["Enumerated-Name", "Enumerated", ["#Enumerated-Extra"], "", []],
-    ["Choice-Name", "Choice", ["CA"], "", [
+    ["Enumerated-Name", "Enumerated", [], "", [
+        [1, "field_value_1", ""],
+        [2, "field_value_2", ""]
+      ]],
+    ["Choice-Name", "Choice", [], "", [
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]
       ]],
@@ -24,17 +27,11 @@ generic_schema = {
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]
       ]],
-    ["Array-Name", "Array", ["/ipv4-net"], "", [
+    ["Array-Name", "Array", [], "", [
         [1, "field_value_1", "String", [], ""],
         [2, "field_value_2", "String", [], ""]
       ]],
     ["MapOf-Name", "MapOf", ["+Integer", "*String"], "", []],
-    ["ArrayOf-Name", "ArrayOf", ["*String"], "", []],
-    ["Record-Restriction", "Record", [], "", [
-        [1, "field_value_1", "String", [], ""]
-      ]],
-    ["Enumerated-Extra", "Enumerated", [], "", [
-        [1, "field_value_1", ""]
-      ]]
+    ["ArrayOf-Name", "ArrayOf", ["*String"], "", []]
   ]
 }

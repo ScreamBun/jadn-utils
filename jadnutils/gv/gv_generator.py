@@ -1,7 +1,7 @@
 import pandas as pd
 from graphviz import Digraph
 
-from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enum_label, build_choice_label, get_extends, get_restricts, get_pointer, get_enumerated
+from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enumerated_label, build_choice_label, get_extends, get_restricts, get_pointer, get_enumerated
 
 class GvGenerator:
 
@@ -61,9 +61,10 @@ class GvGenerator:
         opts = row["opts"]
         key_type, value_type = extract_mapof_types(opts)
         
-        if key_type and not (hasattr(self, "primitives") and key_type in self.primitive_types):
+        if (key_type not in self.primitive_types):
             dot.edge(row["name"], key_type, label="key")
-        if value_type and not (hasattr(self, "primitives") and value_type in self.primitive_types):
+            
+        if (value_type not in self.primitive_types):
             dot.edge(row["name"], value_type, label="value")            
 
     def build_choice_node(self, row, dot, bgcolor="palegreen", shape="none"):
@@ -85,7 +86,7 @@ class GvGenerator:
         opts = row["opts"]
         enum_items = row["fields"]
         
-        label = build_enum_label(row["name"], enum_items, opts, bgcolor)
+        label = build_enumerated_label(row["name"], enum_items, opts, bgcolor)
         dot.node(row["name"], label=label, shape=shape)
         
         pointer = get_pointer(opts)
