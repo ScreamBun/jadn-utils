@@ -8,12 +8,12 @@ generic_schema = {
     ["Schema", "Record", ["{1", "f", "q"], "", [
         [1, "field_value_1", "String", ["w1", "x4"], ""],
         [2, "field_value_2", "String", [], ""],
-        [3, "field_value_3", "Enumerated-Name", [], ""],
-        [4, "field_value_4", "Choice-Name", [], ""],
-        [5, "field_value_5", "Map-Name", [], ""],
-        [6, "field_value_6", "Array-Name", [], ""],
-        [7, "field_value_7", "MapOf-Name", [], ""],
-        [8, "field_value_8", "ArrayOf-Name", [], ""]
+        [3, "field_value_3", "Enumerated-Name", ["w1", "x4"], ""],
+        [4, "field_value_4", "Choice-Name", ["w1", "x4"], ""],
+        [5, "field_value_5", "Map-Name", ["w1", "x4"], ""],
+        [6, "field_value_6", "Array-Name", ["w1", "x4"], ""],
+        [7, "field_value_7", "MapOf-Name", ["w1", "x4"], ""],
+        [8, "field_value_8", "ArrayOf-Name", ["w1", "x4"], ""]
       ]],
     ["Enumerated-Name", "Enumerated", [], "", [
         [1, "field_value_1", ""],

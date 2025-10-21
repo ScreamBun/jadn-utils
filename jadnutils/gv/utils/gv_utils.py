@@ -209,6 +209,23 @@ def get_min_max_exclusive(opts):
     # Join with ' and ' when both present
     return "{" + " and ".join(parts) + "}"
 
+def get_multiplicity_label(opts):
+    """
+    Return the best multiplicity string for the given opts.
+    Priority: exclusive -> inclusive -> occurs -> length.
+    Returns '' when no multiplicity found.
+    """
+    if not opts:
+        return ''
+    for fn in (get_min_max_exclusive, get_min_max_inclusive, get_min_max_occurs, get_min_max_length):
+        try:
+            s = fn(opts)
+        except Exception:
+            s = ''
+        if s:
+            return s
+    return ''
+
 def build_choice_label(name, fields, opts, bgcolor):
     type_opts = get_type_opts(opts)
     combine_opt = get_combine(opts)

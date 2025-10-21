@@ -1,7 +1,7 @@
 import pandas as pd
 from graphviz import Digraph
 
-from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enumerated_label, build_choice_label, get_extends, get_restricts, get_pointer, get_enumerated
+from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enumerated_label, build_choice_label, get_extends, get_restricts, get_pointer, get_enumerated, get_multiplicity_label, safe_get_field_item
 
 class GvGenerator:
 
@@ -26,15 +26,20 @@ class GvGenerator:
         
         for field in fields:
             if field[2] not in self.primitive_types:
-                dot.edge(row["name"], field[2], label=field[1])
+                field_opts = safe_get_field_item(field, 3)
+                mult = get_multiplicity_label(field_opts)
+                if mult:
+                    dot.edge(row["name"], field[2], label=field[1], headlabel=mult, taillabel="1")
+                else:
+                    dot.edge(row["name"], field[2], label=field[1], taillabel="1")
            
         extends = get_extends(opts)    
-        if extends is not '':
-            dot.edge(row["name"], extends, label="extends", style="dashed")
+        if extends != '':
+            dot.edge(row["name"], extends, label="extends", style="dashed", taillabel="1")
                 
         restricts = get_restricts(opts)    
-        if restricts is not '':       
-            dot.edge(restricts, row["name"], label="restricts", style="dashed")                                             
+        if restricts != '':       
+            dot.edge(restricts, row["name"], label="restricts", style="dashed", taillabel="1")                                             
                     
     def build_arrayof_node(self, row, dot, bgcolor="LightSkyBlue", shape="none"):
         opts = row.get("opts", [])
@@ -48,7 +53,11 @@ class GvGenerator:
         value_type = extract_arrayof_value_type(opts) 
         
         if value_type and not value_type in self.primitive_types:
-            dot.edge(row["name"], value_type, label="element")            
+            mult = get_multiplicity_label(opts)
+            if mult:
+                dot.edge(row["name"], value_type, label="element", headlabel=mult, taillabel="1")
+            else:
+                dot.edge(row["name"], value_type, label="element", taillabel="1")            
     
     def build_mapof_node(self, row, dot, bgcolor="LightSkyBlue", shape="none"):
         opts = row["opts"]
@@ -61,11 +70,18 @@ class GvGenerator:
         opts = row["opts"]
         key_type, value_type = extract_mapof_types(opts)
         
+        mult = get_multiplicity_label(opts)
         if (key_type not in self.primitive_types):
-            dot.edge(row["name"], key_type, label="key")
+            if mult:
+                dot.edge(row["name"], key_type, label="key", headlabel=mult, taillabel="1")
+            else:
+                dot.edge(row["name"], key_type, label="key", taillabel="1")
             
         if (value_type not in self.primitive_types):
-            dot.edge(row["name"], value_type, label="value")            
+            if mult:
+                dot.edge(row["name"], value_type, label="value", headlabel=mult, taillabel="1")
+            else:
+                dot.edge(row["name"], value_type, label="value", taillabel="1")            
 
     def build_choice_node(self, row, dot, bgcolor="palegreen", shape="none"):
         opts = row["opts"]
@@ -80,7 +96,12 @@ class GvGenerator:
         
         for field in fields:
             if field[2] not in self.primitive_types:
-                dot.edge(row["name"], field[2], label=field[1])                      
+                field_opts = safe_get_field_item(field, 3)
+                mult = get_multiplicity_label(field_opts)
+                if mult:
+                    dot.edge(row["name"], field[2], label=field[1], headlabel=mult, taillabel="1")
+                else:
+                    dot.edge(row["name"], field[2], label=field[1], taillabel="1")                      
                 
     def build_enum_node(self, row, dot, bgcolor="palegreen", shape="none"):
         opts = row["opts"]
@@ -90,12 +111,12 @@ class GvGenerator:
         dot.node(row["name"], label=label, shape=shape)
         
         pointer = get_pointer(opts)
-        if pointer is not '':       
-            dot.edge(row["name"], pointer, label="pointer", style="dashed")
+        if pointer != '':       
+            dot.edge(row["name"], pointer, label="pointer", style="dashed", taillabel="1")
             
         enumerated = get_enumerated(opts)
-        if enumerated is not '':       
-            dot.edge(row["name"], enumerated, label="enumerated", style="dashed")                                
+        if enumerated != '':       
+            dot.edge(row["name"], enumerated, label="enumerated", style="dashed", taillabel="1")                                
 
     def generate(self, *args, **kwargs):
         schema = self.schema
