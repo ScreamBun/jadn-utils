@@ -1,10 +1,15 @@
 from jadnutils.utils.options import CHOICE_OPTIONS, FIELD_OPTIONS, TYPE_OPTIONS
 
-# Need to add:
-# - edge headlabels and taillabels for field options
-# - display options
-# - css styling options 
+HR_SPACER_HEIGHT = 4
 
+def hr_spacer(height: int = None) -> str:
+    """Return a TABLE row string that acts as vertical spacing.
+
+    Graphviz's HTML-like labels accept a 'height' attribute on <td>, which we use
+    to create vertical padding where an <hr/> would otherwise appear.
+    """
+    h = height if (height is not None) else HR_SPACER_HEIGHT
+    return f"<tr><td height=\"{h}\"></td></tr>\n"
 
 def append_fields_to_label(label, fields):
     """
@@ -226,14 +231,18 @@ def get_multiplicity_label(opts):
             return s
     return ''
 
-def build_choice_label(name, fields, opts, bgcolor):
+def build_choice_label(name, fields, opts, bgcolor, include_table_bg=True, spacer_height=None):
     type_opts = get_type_opts(opts)
     combine_opt = get_combine(opts)
     combine_str = f'Combine {combine_opt}' if combine_opt else ''
     opts_str = array_to_comma_str(type_opts, combine_str)
-    
+    # When the table background is omitted (we're rendering inside a shape like ellipse),
+    # also remove the table border so the surrounding shape is visually seamless.
+    table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
+    table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
+
     label = f'''<
-    <table cellborder="0" cellpadding="1" bgcolor="{bgcolor}">
+    <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
     <tr><td><b>{name}:</b> Choice</td></tr>
     '''
     
@@ -241,14 +250,17 @@ def build_choice_label(name, fields, opts, bgcolor):
         label += f'<tr><td>Options: {opts_str}</td></tr>\n'
         
     if fields:
-        label += '<hr/>'
+        # Only add extra spacer if there was an Options row above; when there
+        # are no type-level options we avoid the additional vertical gap.
+        if opts_str:
+            label += hr_spacer(spacer_height)
         label = append_fields_to_label(label, fields)
         
     label += "</table>>"
     
     return label
 
-def build_enumerated_label(name, enum_items, opts, bgcolor):
+def build_enumerated_label(name, enum_items, opts, bgcolor, include_table_bg=True, spacer_height=None):
     type_opts = get_type_opts(opts)
     pointer_type = get_pointer(opts)
     enumerated_type = get_enumerated(opts)
@@ -263,29 +275,37 @@ def build_enumerated_label(name, enum_items, opts, bgcolor):
         
     opts_str = array_to_comma_str(type_opts, pointer_str, enumerated_str)        
     
+    # When rendering inside a node shape (ellipse), omit the table border.
+    table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
+    table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
+
     label = f'''<
-    <table cellborder="0" cellpadding="1" bgcolor="{bgcolor}">
+    <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
     <tr><td><b>{name}:</b> Enumerated</td></tr>
     '''
     
     if opts_str:
         label += f'<tr><td>Options: {opts_str}</td></tr>\n'    
-    
+
+    # Only spacer when there was an Options row (otherwise items sit closer).
     if not pointer_type and not enumerated_type:
-        label += "<hr/>\n"
+        if opts_str:
+            label += hr_spacer(spacer_height)
         for item in enum_items:
             label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
     label += "</table>>\n"
         
     return label
 
-def build_mapof_label(name, key_type, value_type, opts, bgcolor):
+def build_mapof_label(name, key_type, value_type, opts, bgcolor, include_table_bg=True, spacer_height=None):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
     opts_str = array_to_comma_str(type_opts)
-    
+    table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
+    table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
+
     label = f'''<
-    <table cellborder="0" cellpadding="1" bgcolor="{bgcolor}">
+    <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
     <tr><td><b>{name}:</b> MapOf({key_type if key_type else "?"}, {value_type if value_type else "?"}) {min_max_len}</td></tr>
     '''
     
@@ -318,13 +338,15 @@ def extract_arrayof_value_type(opts=None):
             value_type = opt[1:]
     return value_type
 
-def build_arrayof_label(name, value_type, opts, bgcolor):
+def build_arrayof_label(name, value_type, opts, bgcolor, include_table_bg=True, spacer_height=None):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
     opts_str = array_to_comma_str(type_opts)
-    
+    table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
+    table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
+
     label = f'''<
-    <table cellborder="0" cellpadding="1" bgcolor="{bgcolor}">
+    <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
     <tr><td><b>{name}:</b> ArrayOf({value_type if value_type else "?"}) {min_max_len}</td></tr>
     '''
     
@@ -336,14 +358,16 @@ def build_arrayof_label(name, value_type, opts, bgcolor):
     return label
 
 # Used by record, map, array
-def build_basic_label(name, type_label, opts, bgcolor, fields = []):
+def build_basic_label(name, type_label, opts, bgcolor, fields = [], include_table_bg=True, spacer_height=None):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
     format_opt = get_format(opts)
     opts_str = array_to_comma_str(type_opts, format_opt)
-    
+    table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
+    table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
+
     label = f'''<
-    <table cellborder="0" cellpadding="1" bgcolor="{bgcolor}">
+    <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
     <tr><td><b>{name}:</b> {type_label} {min_max_len}</td></tr>
     '''
     
@@ -351,7 +375,9 @@ def build_basic_label(name, type_label, opts, bgcolor, fields = []):
         label += f'<tr><td>Options: {opts_str}</td></tr>\n'
         
     if fields:
-        label += '<hr/>'
+        # Only add spacer if type-level options were displayed above
+        if opts_str:
+            label += hr_spacer(spacer_height)
         label = append_fields_to_label(label, fields)
         
     label += "</table>>"
