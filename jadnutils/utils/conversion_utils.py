@@ -102,7 +102,7 @@ def get_theme_css():
 		return ''
 
 ############### JSON Convert Utils ###############
-def strip_keys(json_obj) -> list:
+def strip_keys(json_obj):
 	"""
 	Recursively strip keys from JSON objects, returning only values.
 	Example: {"a": 1, "b": 2} => [1, 2]
@@ -130,4 +130,3 @@ def validate_json(data):
 		return data
 	else:
 		raise ValueError("Input is not a valid JSON string or object.")
-		

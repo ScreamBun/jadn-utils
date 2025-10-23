@@ -1,6 +1,6 @@
 from jadnutils.utils.conversion_utils import strip_keys, validate_json
 
-def convert_to_compact(json_obj) -> list:
+def convert_to_compact(json_obj):
     """
     Converts a Verbose JSON Object to a Compact JSON representation
     """

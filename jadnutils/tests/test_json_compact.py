@@ -73,9 +73,6 @@ def test_strip_keys_3():
         }
     ]
 
-    expected_json = [
-        ["St. Louis", "Missouri", "38.627003", "-90.199402"],
-        ["Seattle", "Washington", "47.60621", "-122.33207"]
-    ]
+    expected_json = [["St. Louis", "Missouri", "38.627003", "-90.199402"],["Seattle", "Washington", "47.60621", "-122.33207"]]
 
     assert strip_keys(nested_json) == expected_json
