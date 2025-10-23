@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 
-
+############### HTML Convert Utils ###############
 def build_type_summary_html(name, type_val, options, description):
 	"""
 	Build HTML table for type, options, and description, including a heading for the name.
@@ -101,6 +101,20 @@ def get_theme_css():
 	except Exception:
 		return ''
 
+############### JSON Convert Utils ###############
+def strip_keys(json_obj) -> list:
+	"""
+	Recursively strip keys from JSON objects, returning only values.
+	Example: {"a": 1, "b": 2} => [1, 2]
+	"""
+	if isinstance(json_obj, dict): # {a:1, b:2}
+		return [strip_keys(value) for value in json_obj.values()]
+	elif isinstance(json_obj, list): # [{a:1, b:2}]
+		return [strip_keys(item) for item in json_obj]
+	else: # value base case
+		return json_obj
+
+############### JSON Validate Utils ###############
 def validate_json(data):
 	"""
 	Validate if the input is a valid JSON string or object.
@@ -116,3 +130,4 @@ def validate_json(data):
 		return data
 	else:
 		raise ValueError("Input is not a valid JSON string or object.")
+		
