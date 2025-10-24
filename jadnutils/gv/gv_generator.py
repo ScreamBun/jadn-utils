@@ -61,11 +61,6 @@ class GvGenerator:
         }
     }
 
-    def get_style(self) -> dict:
-        """Return a deep copy of the class default style so callers can mutate safely."""
-        import copy
-        return copy.deepcopy(self.STYLE_DEFAULT)
-
     basic_types = ["Record", "Map", "Array"]
     primitive_types = ["String", "Integer", "Binary", "Boolean", "Number"]
     schema: dict = {}
@@ -74,7 +69,7 @@ class GvGenerator:
     def __init__(self, schema: dict, style: dict = None):
         self.schema = schema
         
-        base_style = self.get_style()
+        base_style = self.STYLE_DEFAULT
         if style is None or style == {}:
             self.style = base_style
         else:
@@ -86,8 +81,6 @@ class GvGenerator:
                 merged['label_spacer_height'] = label_block['spacer_height']
             # legacy: if 'label_spacer_height' provided directly, keep it
             self.style = merged
-        
-    
     
     def init_diagraph(self) -> Digraph:
         dot = Digraph(comment=self.style.get('graph_comment', 'JADN Schema'),

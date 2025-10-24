@@ -52,7 +52,52 @@ g = GvGenerator(schema, style={'detail': GvGenerator.LOGICAL})
 g = GvGenerator(schema, style={'detail': GvGenerator.CONCEPTUAL})
 ```
 
+## Available style keys
+
+You can pass a `style` dict into `GvGenerator(schema, style=...)` to override
+defaults for a graph. The most commonly-used keys are below (defaults are
+provided by `GvGenerator.STYLE_DEFAULT`):
+
+- `detail` (string) — one of `conceptual`, `logical`, or `informational`. Controls
+  label verbosity (headers only, field names, or full field rows).
+- `show_links` (bool) — whether dashed "link" edges (e.g., pointer/enumerated)
+  are included in the graph.
+- `show_label_name` (bool) — show or hide the main edge label (the field name).
+  When false the `label` attribute is omitted from edges entirely.
+- `show_headlabel` (bool) — show or hide the head multiplicity label on edges.
+- `show_taillabel` (bool) — show or hide the tail multiplicity label on edges.
+- `enums_allowed` (int | None) — maximum number of enumerated items to render
+  inside an `Enumerated` node. `None` shows all, `0` shows none, an integer
+  truncates the list and appends a "... and N more" summary row when items
+  remain.
+- `label_spacer_height` or `label.spacer_height` (int) — vertical spacer height
+  used in place of an `<hr/>` inside HTML-like labels. Prefer the nested
+  `label` block (e.g. `{'label': {'spacer_height': 8}}`) but the legacy
+  `label_spacer_height` is still supported.
+- `link_horizontal` (bool) — prefer left-to-right layout for edges. When true
+  the generator uses LR `rankdir` and spreads edge ports around node compass
+  points to improve label legibility.
+- `graph_comment`, `graph_format`, `graph_engine` — low-level Graphviz
+  settings passed to `graphviz.Digraph`.
+- `graph_attr`, `node_attr`, `edge_attr` (dict) — maps of Graphviz attributes
+  applied to the graph, nodes, and edges respectively (font, fontsize, arrowsize,
+  etc.). These are merged into the Graphviz objects via `graph_attr.update(...)`.
+- `per_type_attrs` (dict) — per-type visual overrides. Keys are type names
+  (e.g. `Record`, `Enumerated`, `String`) and values are dicts that may contain
+  `fillcolor` and `shape`. Use this to render primitive types as ellipses while
+  keeping complex types as tables.
+
+Example: change enumerated truncation and layout
+
+```py
+g = GvGenerator(schema, style={
+    'enums_allowed': 5,
+    'detail': GvGenerator.INFORMATIONAL,
+    'link_horizontal': True,
+    'per_type_attrs': {'String': {'shape': 'ellipse'}}
+})
+```
+
 These settings are applied per-graph and are carried through to all label
 builders so fields, options, and enumerated items are shown or hidden
 consistently.
-
