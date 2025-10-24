@@ -116,8 +116,9 @@ class GvGenerator:
 
     # Basic is used for record, map and array    
     def build_basic_node(self, row, dot, type_label="Record"):
-        fields = row.get("fields", [])
-        opts = row.get("opts", [])
+        # Coerce None to empty list if the schema provides null fields/opts
+        fields = row.get("fields") or []
+        opts = row.get("opts") or []
         # get per-type fillcolor from style, fallback to LightSkyBlue
         per_type = self.style.get('per_type_attrs', {})
         bgcolor = per_type.get(type_label, {}).get('fillcolor', self.COLOR_LIGHTSKYBLUE)
@@ -182,8 +183,9 @@ class GvGenerator:
         dot.edge(tail, head, **attrs)
             
     def build_basic_edges(self, row, dot):
-        fields = row.get("fields", [])
-        opts = row.get("opts", [])
+        # Use `or []` so a present-but-None value becomes an empty iterable
+        fields = row.get("fields") or []
+        opts = row.get("opts") or []
         
         for field in fields:
             if field[2] not in self.primitive_types:
@@ -267,8 +269,8 @@ class GvGenerator:
                 self._edge(dot, row["name"], value_type, label="value", taillabel="1")            
 
     def build_choice_node(self, row, dot):
-        opts = row.get("opts", [])
-        fields = row.get("fields", [])
+        opts = row.get("opts") or []
+        fields = row.get("fields") or []
         per_type = self.style.get('per_type_attrs', {})
         bgcolor = per_type.get('Choice', {}).get('fillcolor', self.COLOR_LIGHTSKYBLUE)
         node_shape = per_type.get('Choice', {}).get('shape', self.NODE_SHAPE_PLAIN)
@@ -285,8 +287,8 @@ class GvGenerator:
         dot.node(row["name"], label=label, **node_attrs)
                 
     def build_choice_edges(self, row, dot):
-        opts = row.get("opts", [])
-        fields = row.get("fields", [])
+        opts = row.get("opts") or []
+        fields = row.get("fields") or []
         
         if fields is not None:
             for field in fields:
@@ -299,8 +301,8 @@ class GvGenerator:
                         self._edge(dot, row["name"], field[2], label=field[1], taillabel="1")                      
                 
     def build_enum_node(self, row, dot):
-        opts = row.get("opts", [])
-        enum_items = row.get("fields", [])
+        opts = row.get("opts") or []
+        enum_items = row.get("fields") or []
         per_type = self.style.get('per_type_attrs', {})
         bgcolor = per_type.get('Enumerated', {}).get('fillcolor', self.COLOR_PALEGREEN)
         node_shape = per_type.get('Enumerated', {}).get('shape', self.NODE_SHAPE_PLAIN)
