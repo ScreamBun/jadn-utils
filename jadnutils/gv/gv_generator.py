@@ -3,19 +3,68 @@ from graphviz import Digraph
 
 from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, extract_arrayof_value_type, extract_mapof_types, build_mapof_label, build_enumerated_label, build_choice_label, get_extends, get_restricts, get_pointer, get_enumerated, get_multiplicity_label, safe_get_field_item
 
+
 class GvGenerator:
 
     CONCEPTUAL = 'conceptual'
     LOGICAL = 'logical'
-    INFORMATION = 'information'
-    GRAPH_DETAIL_OPTS = {CONCEPTUAL, LOGICAL, INFORMATION}
+    INFORMATIONAL = 'informational'
+    GRAPH_DETAIL_OPTS = {CONCEPTUAL, LOGICAL, INFORMATIONAL}
     
+    # Visual constants (kept on the class for backward compatibility)
     COLOR_LIGHTSKYBLUE = 'LightSkyBlue'
     COLOR_PALEGREEN = 'Palegreen'
-    
+
     NODE_SHAPE_NONE = 'none'
-    NODE_SHAPE_PLAIN = 'plain' # rectangle
+    NODE_SHAPE_PLAIN = 'plain'  # rectangle
     NODE_SHAPE_ELLIPSE = 'ellipse'
+
+    # Default style dict (moved here so callers don't need a separate gv_styles module)
+    STYLE_DEFAULT = {
+        'detail': CONCEPTUAL,
+        'show_links': True,
+        'show_label_name': True,
+        'show_headlabel': True,
+        'show_taillabel': True,
+        'enums_allowed': 10,
+        'graph_comment': 'JADN Schema',
+        'graph_format': 'svg',
+        'graph_engine': 'dot',
+        'label_spacer_height': 4,
+        'link_horizontal': False,
+        'graph_attr': {
+            'fontname': 'Arial',
+            'fontsize': '12',
+            'bgcolor': 'white'
+        },
+        'node_attr': {
+            'fontname': 'Arial',
+            'fontsize': '8',
+            'shape': NODE_SHAPE_PLAIN
+        },
+        'edge_attr': {
+            'fontname': 'Arial',
+            'fontsize': '7',
+            'arrowsize': '0.5',
+        },
+        'per_type_attrs': {
+            'Record': {'fillcolor': COLOR_LIGHTSKYBLUE, 'shape': NODE_SHAPE_PLAIN},
+            'Map': {'fillcolor': COLOR_LIGHTSKYBLUE, 'shape': NODE_SHAPE_PLAIN},
+            'Array': {'fillcolor': COLOR_LIGHTSKYBLUE, 'shape': NODE_SHAPE_PLAIN},
+            'Choice': {'fillcolor': COLOR_LIGHTSKYBLUE, 'shape': NODE_SHAPE_PLAIN},
+            'Enumerated': {'fillcolor': COLOR_PALEGREEN, 'shape': NODE_SHAPE_PLAIN},
+            'Integer': {'fillcolor': COLOR_PALEGREEN, 'shape': NODE_SHAPE_ELLIPSE},
+            'String': {'fillcolor': COLOR_PALEGREEN, 'shape': NODE_SHAPE_ELLIPSE},
+            'Binary': {'fillcolor': COLOR_PALEGREEN, 'shape': NODE_SHAPE_ELLIPSE},
+            'Boolean': {'fillcolor': COLOR_PALEGREEN, 'shape': NODE_SHAPE_ELLIPSE},
+            'Number': {'fillcolor': COLOR_PALEGREEN, 'shape': NODE_SHAPE_ELLIPSE},
+        }
+    }
+
+    def get_style(self) -> dict:
+        """Return a deep copy of the class default style so callers can mutate safely."""
+        import copy
+        return copy.deepcopy(self.STYLE_DEFAULT)
 
     basic_types = ["Record", "Map", "Array"]
     primitive_types = ["String", "Integer", "Binary", "Boolean", "Number"]
@@ -38,86 +87,7 @@ class GvGenerator:
             # legacy: if 'label_spacer_height' provided directly, keep it
             self.style = merged
         
-    def get_style(self) -> dict:
-        return {
-            'detail': self.CONCEPTUAL,  # Level of detail: conceptual, logical, information
-            'show_links': True,         # Show link edges (dashed)
-            'show_edge_label': True,    # Show field name on edges
-            'show_edge_mult': True,     # Show multiplicity on edges
-            # 'show_attributes': False,   # Show node attributes connected to entities (ellipse)
-            'enums_allowed': 10,        # Show Enumerated items with max count (0: none)
-            
-            'graph_comment': 'JADN Schema',
-            'graph_format': 'svg',  
-            'graph_engine': 'dot',
-            'label_spacer_height': 4,
-            'link_horizontal': False,
-            
-            'graph_attr' : {
-                'fontname': 'Arial',
-                'fontsize': '12',
-                'bgcolor': 'white',
-                # 'bgcolor': 'transparent'
-            },
-            'node_attr' : {
-                'fontname': 'Arial',
-                'fontsize': '8',
-                'shape': 'plain',
-                # 'style': 'filled',
-                # 'fillcolor': 'lightskyblue1'
-            },
-            
-            'edge_attr' : {
-                'fontname': 'Arial',
-                'fontsize': '7',
-                'arrowsize': '0.5',
-                # labelangle/labeldistance removed for consistent headlabel/taillabel rendering
-            },
-            
-            'per_type_attrs': {
-                'Record': {
-                    'fillcolor': self.COLOR_LIGHTSKYBLUE,
-                    'shape': self.NODE_SHAPE_PLAIN
-                },
-                'Map': {
-                    'fillcolor': self.COLOR_LIGHTSKYBLUE,
-                    'shape': self.NODE_SHAPE_PLAIN
-                },
-                'Array': {
-                    'fillcolor': self.COLOR_LIGHTSKYBLUE,
-                    'shape': self.NODE_SHAPE_PLAIN
-                },
-                'Choice': {
-                    'fillcolor': self.COLOR_LIGHTSKYBLUE,
-                    'shape': self.NODE_SHAPE_PLAIN
-                },
-                'Enumerated': {
-                    'fillcolor': self.COLOR_PALEGREEN,
-                    'shape': self.NODE_SHAPE_PLAIN
-                },
-                'Integer': {
-                    'fillcolor': self.COLOR_PALEGREEN,
-                    'shape': self.NODE_SHAPE_ELLIPSE
-                },
-                'String': {
-                    'fillcolor': self.COLOR_PALEGREEN,
-                    'shape': self.NODE_SHAPE_ELLIPSE
-                },
-                'Binary': {    
-                    'fillcolor': self.COLOR_PALEGREEN,
-                    'shape': self.NODE_SHAPE_ELLIPSE
-                },
-                'Boolean': {
-                    'fillcolor': self.COLOR_PALEGREEN,
-                    'shape': self.NODE_SHAPE_ELLIPSE
-                },
-                'Number': {
-                    'fillcolor': self.COLOR_PALEGREEN,
-                    'shape': self.NODE_SHAPE_ELLIPSE
-                }
-            }
-            
-        }        
+    
     
     def init_diagraph(self) -> Digraph:
         dot = Digraph(comment=self.style.get('graph_comment', 'JADN Schema'),
@@ -164,7 +134,8 @@ class GvGenerator:
         # If the shape is plain/none, keep the table background; otherwise make the table transparent
         include_table_bg = node_shape in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE)
         spacer_height = self.style.get('label_spacer_height', None)
-        label = build_basic_label(row['name'], type_label, opts, bgcolor, fields, include_table_bg, spacer_height)
+        detail = self.style.get('detail', self.INFORMATIONAL)
+        label = build_basic_label(row['name'], type_label, opts, bgcolor, fields, include_table_bg, spacer_height, detail)
 
         node_attrs = {'shape': node_shape}
         if node_shape not in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE):
@@ -201,6 +172,20 @@ class GvGenerator:
                 hcount = self._edge_head_counters.get(head, 0)
                 attrs['headport'] = head_ports[hcount % len(head_ports)]
                 self._edge_head_counters[head] = hcount + 1
+        # Respect style flags: optionally hide headlabel/taillabel
+        show_headlabel = self.style.get('show_headlabel', True)
+        show_taillabel = self.style.get('show_taillabel', True)
+        show_label_name = self.style.get('show_label_name', True)
+        if not show_headlabel and 'headlabel' in attrs:
+            attrs.pop('headlabel', None)
+        if not show_taillabel and 'taillabel' in attrs:
+            attrs.pop('taillabel', None)
+        # Optionally hide the main edge label (field name)
+        if not show_label_name and 'label' in attrs:
+            # Graphviz treats an empty string and absence differently; prefer to remove
+            # the attribute entirely so no label is rendered.
+            attrs.pop('label', None)
+
         dot.edge(tail, head, **attrs)
             
     def build_basic_edges(self, row, dot):
@@ -232,7 +217,8 @@ class GvGenerator:
         node_shape = per_type.get('Array', {}).get('shape', self.NODE_SHAPE_PLAIN)
         include_table_bg = node_shape in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE)
         spacer_height = self.style.get('label_spacer_height', None)
-        label = build_arrayof_label(row["name"], value_type, opts, bgcolor, include_table_bg, spacer_height)
+        detail = self.style.get('detail', self.INFORMATIONAL)
+        label = build_arrayof_label(row["name"], value_type, opts, bgcolor, include_table_bg, spacer_height, detail)
 
         node_attrs = {'shape': node_shape}
         if node_shape not in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE):
@@ -260,7 +246,8 @@ class GvGenerator:
         node_shape = per_type.get('Map', {}).get('shape', self.NODE_SHAPE_PLAIN)
         include_table_bg = node_shape in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE)
         spacer_height = self.style.get('label_spacer_height', None)
-        label = build_mapof_label(row["name"], key_type, value_type, opts, bgcolor, include_table_bg, spacer_height)
+        detail = self.style.get('detail', self.INFORMATIONAL)
+        label = build_mapof_label(row["name"], key_type, value_type, opts, bgcolor, include_table_bg, spacer_height, detail)
 
         node_attrs = {'shape': node_shape}
         if node_shape not in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE):
@@ -294,7 +281,8 @@ class GvGenerator:
         node_shape = per_type.get('Choice', {}).get('shape', self.NODE_SHAPE_PLAIN)
         include_table_bg = node_shape in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE)
         spacer_height = self.style.get('label_spacer_height', None)
-        label = build_choice_label(row["name"], fields, opts, bgcolor, include_table_bg, spacer_height)
+        detail = self.style.get('detail', self.INFORMATIONAL)
+        label = build_choice_label(row["name"], fields, opts, bgcolor, include_table_bg, spacer_height, detail)
 
         node_attrs = {'shape': node_shape}
         if node_shape not in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE):
@@ -324,7 +312,9 @@ class GvGenerator:
         node_shape = per_type.get('Enumerated', {}).get('shape', self.NODE_SHAPE_PLAIN)
         include_table_bg = node_shape in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE)
         spacer_height = self.style.get('label_spacer_height', None)
-        label = build_enumerated_label(row["name"], enum_items, opts, bgcolor, include_table_bg, spacer_height)
+        detail = self.style.get('detail', self.INFORMATIONAL)
+        enums_allowed = self.style.get('enums_allowed', None)
+        label = build_enumerated_label(row["name"], enum_items, opts, bgcolor, include_table_bg, spacer_height, detail, enums_allowed)
 
         node_attrs = {'shape': node_shape}
         if node_shape not in (self.NODE_SHAPE_PLAIN, self.NODE_SHAPE_NONE):

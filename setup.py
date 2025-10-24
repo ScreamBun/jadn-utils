@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="jadnutils",
     version="0.2.0", 
-    packages=["jadnutils", "jadnutils.html", "jadnutils.utils", "jadnutils.support"],
+    packages=["jadnutils", "jadnutils.html", "jadnutils.utils", "jadnutils.support", "jadnutils.gv", "jadnutils.gv.utils"],
     install_requires=[
         "pytest",
         "pandas"

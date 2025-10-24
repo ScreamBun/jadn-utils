@@ -12,7 +12,8 @@ def test_table_border_removed_for_ellipse():
         ]
     }
 
-    gv = GvGenerator(schema)
+    # Force Record to render as ellipse for this test
+    gv = GvGenerator(schema, style={'per_type_attrs': {'Record': {'shape': GvGenerator.NODE_SHAPE_ELLIPSE, 'fillcolor': GvGenerator.COLOR_LIGHTSKYBLUE}}})
     src = gv.generate()
 
     # Extract the Album node label block and attributes

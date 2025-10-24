@@ -2,6 +2,7 @@ from jadnutils.utils.options import CHOICE_OPTIONS, FIELD_OPTIONS, TYPE_OPTIONS
 
 HR_SPACER_HEIGHT = 4
 
+
 def hr_spacer(height: int = None) -> str:
     """Return a TABLE row string that acts as vertical spacing.
 
@@ -11,7 +12,8 @@ def hr_spacer(height: int = None) -> str:
     h = height if (height is not None) else HR_SPACER_HEIGHT
     return f"<tr><td height=\"{h}\"></td></tr>\n"
 
-def append_fields_to_label(label, fields):
+
+def append_fields_to_label(label, fields, detail='information'):
     """
     Appends field rows to the label for each field in fields.
     Returns the updated label string.
@@ -21,16 +23,28 @@ def append_fields_to_label(label, fields):
         field_name = safe_get_field_item(field, 1)
         field_type = safe_get_field_item(field, 2)
         field_opts = safe_get_field_item(field, 3)
-        type_opts = get_type_opts(field_opts)
-        field_flag_opts = get_field_opts(field_opts)
-        field_min_max_occurs = get_min_max_occurs(field_opts)
-        field_min_max_length = get_min_max_length(field_opts)
-        field_min_max_inclusive = get_min_max_inclusive(field_opts)
-        field_min_max_exclusive = get_min_max_exclusive(field_opts)
-        field_format_opt = get_format(field_opts)
-        opts_str = array_to_comma_str(type_opts, field_flag_opts, field_format_opt)
-        label += f'<tr><td align="left">{field_id} {field_name}: {field_type} {field_min_max_occurs} {field_min_max_length} {field_min_max_inclusive} {field_min_max_exclusive} {opts_str}</td></tr>\n'
+        # detail modes: 'information' = full, 'logical' = field names only,
+        # 'conceptual' = no fields displayed
+        d = (detail or 'information').lower()
+        if d == 'conceptual' or d == 'concept':
+            # do not append any fields for conceptual view
+            continue
+        elif d == 'logical' or d == 'logic':
+            # only show the field name
+            label += f'<tr><td align="left">{field_name}</td></tr>\n'
+        else:
+            # full informational view: include id, name, type and opts
+            type_opts = get_type_opts(field_opts)
+            field_flag_opts = get_field_opts(field_opts)
+            field_min_max_occurs = get_min_max_occurs(field_opts)
+            field_min_max_length = get_min_max_length(field_opts)
+            field_min_max_inclusive = get_min_max_inclusive(field_opts)
+            field_min_max_exclusive = get_min_max_exclusive(field_opts)
+            field_format_opt = get_format(field_opts)
+            opts_str = array_to_comma_str(type_opts, field_flag_opts, field_format_opt)
+            label += f'<tr><td align="left">{field_id} {field_name}: {field_type} {field_min_max_occurs} {field_min_max_length} {field_min_max_inclusive} {field_min_max_exclusive} {opts_str}</td></tr>\n'
     return label
+
 
 def safe_get_field_item(field, idx):
     """
@@ -39,6 +53,7 @@ def safe_get_field_item(field, idx):
     if isinstance(field, (list, tuple)) and len(field) > idx:
         return field[idx]
     return []
+
 
 def array_to_comma_str(arr, extra_list=None, *extra):
     """
@@ -53,6 +68,7 @@ def array_to_comma_str(arr, extra_list=None, *extra):
         items.extend(str(item) for item in extra_list)
     items.extend(str(e) for e in extra if e)
     return ', '.join(items)
+
 
 def get_type_opts(opts):
     opts_found = []
@@ -70,6 +86,7 @@ def get_type_opts(opts):
             opts_found.append(TYPE_OPTIONS[opt]['name'])
     return opts_found
 
+
 def get_field_opts(opts):
     opts_found = []
     for opt in opts:
@@ -81,6 +98,7 @@ def get_field_opts(opts):
             opts_found.append(FIELD_OPTIONS[opt]['name'])
     return opts_found
 
+
 def get_combine(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('C'):
@@ -89,11 +107,13 @@ def get_combine(opts):
                 return CHOICE_OPTIONS.get(key)
     return ''
 
+
 def get_extends(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('e'):
             return opt[1:]
     return ''
+
 
 def get_restricts(opts):
     for opt in opts:
@@ -101,11 +121,13 @@ def get_restricts(opts):
             return opt[1:]
     return ''
 
+
 def get_enumerated(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('#'):
             return opt[1:]
     return ''
+
 
 def get_pointer(opts):
     for opt in opts:
@@ -113,16 +135,18 @@ def get_pointer(opts):
             return opt[1:]
     return ''
 
+
 def get_format(opts):
     for opt in opts:
         if isinstance(opt, str) and opt.startswith('/'):
             return opt[1:]
     return ''
 
+
 def get_min_max_length(opts):
     min_length = ''
     max_length = ''
-    
+
     for opt in opts:
         if isinstance(opt, str):
             if opt.startswith("{"):
@@ -131,19 +155,20 @@ def get_min_max_length(opts):
             elif opt.startswith("}"):
                 num = opt[1:]
                 max_length = num if num.isdigit() else "*"
-                
+
     if min_length == '' and max_length == '':
         return ''
-        
+
     if max_length is '':
         max_length = "*"
-        
+
     return f"{{{min_length}..{max_length}}}"
-    
+
+
 def get_min_max_occurs(opts):
     min_occurs = ''
     max_occurs = ''
-    
+
     for opt in opts:
         if isinstance(opt, str):
             if opt.startswith("["):
@@ -152,20 +177,21 @@ def get_min_max_occurs(opts):
             elif opt.startswith("]"):
                 num = opt[1:]
                 max_occurs = num if num.isdigit() else "*"
-                
+
     if min_occurs == '' and max_occurs == '':
         return ''
-    
+
     if max_occurs is '':
         max_occurs = "*"
-        
+
     return f"[{min_occurs}..{max_occurs}]"
+
 
 # w, x
 def get_min_max_inclusive(opts):
     min = ''
     max = ''
-    
+
     for opt in opts:
         if isinstance(opt, str):
             if opt.startswith("w"):
@@ -174,7 +200,7 @@ def get_min_max_inclusive(opts):
             elif opt.startswith("x"):
                 num = opt[1:]
                 max = num if num.isdigit() else "*"
-                
+
     # If neither bound present, return empty
     if min == '' and max == '':
         return ''
@@ -187,11 +213,12 @@ def get_min_max_inclusive(opts):
 
     return "{" + " and ".join(parts) + "}"
 
+
 # y, z
 def get_min_max_exclusive(opts):
     min = ''
     max = ''
-    
+
     for opt in opts:
         if isinstance(opt, str):
             if opt.startswith("y"):
@@ -200,7 +227,7 @@ def get_min_max_exclusive(opts):
             elif opt.startswith("z"):
                 num = opt[1:]
                 max = num if num.isdigit() else "*"
-                
+
     # If neither bound present, return empty
     if min == '' and max == '':
         return ''
@@ -213,6 +240,7 @@ def get_min_max_exclusive(opts):
 
     # Join with ' and ' when both present
     return "{" + " and ".join(parts) + "}"
+
 
 def get_multiplicity_label(opts):
     """
@@ -231,11 +259,13 @@ def get_multiplicity_label(opts):
             return s
     return ''
 
-def build_choice_label(name, fields, opts, bgcolor, include_table_bg=True, spacer_height=None):
+
+def build_choice_label(name, fields, opts, bgcolor, include_table_bg=True, spacer_height=None, detail='information'):
     type_opts = get_type_opts(opts)
     combine_opt = get_combine(opts)
     combine_str = f'Combine {combine_opt}' if combine_opt else ''
     opts_str = array_to_comma_str(type_opts, combine_str)
+    d = (detail or 'information').lower()
     # When the table background is omitted (we're rendering inside a shape like ellipse),
     # also remove the table border so the surrounding shape is visually seamless.
     table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
@@ -243,78 +273,107 @@ def build_choice_label(name, fields, opts, bgcolor, include_table_bg=True, space
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}:</b> Choice</td></tr>
+    <tr><td><b>{name}: Choice</b></td></tr>
     '''
-    
-    if opts_str:
+
+    if d == 'informational' and opts_str:
         label += f'<tr><td>Options: {opts_str}</td></tr>\n'
-        
+
     if fields:
         # Only add extra spacer if there was an Options row above; when there
         # are no type-level options we avoid the additional vertical gap.
-        if opts_str:
+        if d == 'informational' and opts_str:
             label += hr_spacer(spacer_height)
-        label = append_fields_to_label(label, fields)
-        
+        label = append_fields_to_label(label, fields, detail)
+
     label += "</table>>"
-    
+
     return label
 
-def build_enumerated_label(name, enum_items, opts, bgcolor, include_table_bg=True, spacer_height=None):
+
+def build_enumerated_label(name, enum_items, opts, bgcolor, include_table_bg=True, spacer_height=None, detail='information', enums_allowed=None):
     type_opts = get_type_opts(opts)
     pointer_type = get_pointer(opts)
     enumerated_type = get_enumerated(opts)
-    
+
     pointer_str = ''
     if pointer_type is not '':
         pointer_str = f'pointing to {pointer_type}'
-        
+
     enumerated_str = ''
     if enumerated_type is not '':
         enumerated_str = f'enumerated by {enumerated_type}'
-        
-    opts_str = array_to_comma_str(type_opts, pointer_str, enumerated_str)        
-    
+
+    opts_str = array_to_comma_str(type_opts, pointer_str, enumerated_str)
+
     # When rendering inside a node shape (ellipse), omit the table border.
     table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
     table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}:</b> Enumerated</td></tr>
+    <tr><td><b>{name}: Enumerated</b></td></tr>
     '''
-    
-    if opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'    
+
+    d = (detail or 'information').lower()
+    if d == 'informational' and opts_str:
+        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
 
     # Only spacer when there was an Options row (otherwise items sit closer).
     if not pointer_type and not enumerated_type:
-        if opts_str:
+        if d == 'informational' and opts_str:
             label += hr_spacer(spacer_height)
-        for item in enum_items:
-            label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
+        # Enumerated items should respect detail level; conceptual hides items
+        if d != 'conceptual':
+            # Determine how many items to show. If enums_allowed is None, show all.
+            if enums_allowed is None:
+                allowed = None
+            else:
+                try:
+                    allowed = int(enums_allowed)
+                except Exception:
+                    allowed = None
+
+            if allowed == 0:
+                # explicitly show none
+                pass
+            else:
+                total = len(enum_items) if enum_items else 0
+                # If allowed is None, show all; otherwise show up to allowed
+                to_show = enum_items if (allowed is None) else enum_items[:allowed]
+                for item in to_show:
+                    label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
+                if allowed is not None and total > allowed:
+                    remaining = total - allowed
+                    label += f'<tr><td align="left">... and {remaining} more</td></tr>\n'
     label += "</table>>\n"
-        
+
     return label
 
-def build_mapof_label(name, key_type, value_type, opts, bgcolor, include_table_bg=True, spacer_height=None):
+
+def build_mapof_label(name, key_type, value_type, opts, bgcolor, include_table_bg=True, spacer_height=None, detail='information'):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
     opts_str = array_to_comma_str(type_opts)
+    d = (detail or 'information').lower()
     table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
     table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
 
+    # Only show the min/max length in informational/detail mode
+    len_str = f" {min_max_len}" if (d == 'informational' and min_max_len) else ''
+
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}:</b> MapOf({key_type if key_type else "?"}, {value_type if value_type else "?"}) {min_max_len}</td></tr>
+    <tr><td><b>{name}: MapOf({key_type if key_type else "?"}, {value_type if value_type else "?"}){len_str}</b></td></tr>
     '''
-    
-    if opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'        
-        
+
+    if d == 'informational' and opts_str:
+        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
+
     label += "</table>>\n"
-    
+
     return label
+
 
 def extract_mapof_types(opts=None):
     if opts is None:
@@ -329,6 +388,7 @@ def extract_mapof_types(opts=None):
                 value_type = opt[1:]
     return key_type, value_type
 
+
 def extract_arrayof_value_type(opts=None):
     if opts is None:
         opts = []
@@ -338,48 +398,58 @@ def extract_arrayof_value_type(opts=None):
             value_type = opt[1:]
     return value_type
 
-def build_arrayof_label(name, value_type, opts, bgcolor, include_table_bg=True, spacer_height=None):
+
+def build_arrayof_label(name, value_type, opts, bgcolor, include_table_bg=True, spacer_height=None, detail='information'):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
     opts_str = array_to_comma_str(type_opts)
+    d = (detail or 'information').lower()
     table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
     table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
 
+    # Only show the min/max length in informational/detail mode
+    len_str = f" {min_max_len}" if (d == 'informational' and min_max_len) else ''
+
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}:</b> ArrayOf({value_type if value_type else "?"}) {min_max_len}</td></tr>
+    <tr><td><b>{name}: ArrayOf({value_type if value_type else "?"}){len_str}</b></td></tr>
     '''
-    
-    if opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'      
-        
-    label += "</table>>\n"        
-    
+
+    if d == 'informational' and opts_str:
+        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
+
+    label += "</table>>\n"
+
     return label
 
+
 # Used by record, map, array
-def build_basic_label(name, type_label, opts, bgcolor, fields = [], include_table_bg=True, spacer_height=None):
+def build_basic_label(name, type_label, opts, bgcolor, fields = [], include_table_bg=True, spacer_height=None, detail='information'):
     min_max_len = get_min_max_length(opts)
     type_opts = get_type_opts(opts)
     format_opt = get_format(opts)
     opts_str = array_to_comma_str(type_opts, format_opt)
+    d = (detail or 'information').lower()
     table_bg = f' bgcolor="{bgcolor}"' if include_table_bg and bgcolor else ''
     table_border = '' if include_table_bg else ' border="0" cellspacing="0"'
 
+    # Only show the min/max length in informational/detail mode
+    len_str = f" {min_max_len}" if (d == 'informational' and min_max_len) else ''
+
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}:</b> {type_label} {min_max_len}</td></tr>
+    <tr><td><b>{name}: {type_label}{len_str}</b></td></tr>
     '''
-    
-    if opts_str:
+
+    if d == 'informational' and opts_str:
         label += f'<tr><td>Options: {opts_str}</td></tr>\n'
-        
+
     if fields:
         # Only add spacer if type-level options were displayed above
-        if opts_str:
+        if d == 'informational' and opts_str:
             label += hr_spacer(spacer_height)
-        label = append_fields_to_label(label, fields)
-        
+        label = append_fields_to_label(label, fields, detail)
+
     label += "</table>>"
-    
+
     return label
