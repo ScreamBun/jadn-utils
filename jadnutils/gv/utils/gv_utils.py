@@ -3,6 +3,15 @@ from jadnutils.utils.options import CHOICE_OPTIONS, FIELD_OPTIONS, TYPE_OPTIONS
 HR_SPACER_HEIGHT = 4
 
 
+def escape_html(s):
+    """Escape &, <, > for safe inclusion inside Graphviz HTML-like labels."""
+    if s is None:
+        return ''
+    s = str(s)
+    # Order matters: escape & first
+    return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
 def hr_spacer(height: int = None) -> str:
     """Return a TABLE row string that acts as vertical spacing.
 
@@ -42,7 +51,7 @@ def append_fields_to_label(label, fields, detail='information'):
             field_min_max_exclusive = get_min_max_exclusive(field_opts)
             field_format_opt = get_format(field_opts)
             opts_str = array_to_comma_str(type_opts, field_flag_opts, field_format_opt)
-            label += f'<tr><td align="left">{field_id} {field_name}: {field_type} {field_min_max_occurs} {field_min_max_length} {field_min_max_inclusive} {field_min_max_exclusive} {opts_str}</td></tr>\n'
+            label += f'<tr><td align="left">{field_id} {escape_html(field_name)}: {escape_html(field_type)} {escape_html(field_min_max_occurs)} {escape_html(field_min_max_length)} {escape_html(field_min_max_inclusive)} {escape_html(field_min_max_exclusive)} {escape_html(opts_str)}</td></tr>\n'
     return label
 
 
@@ -273,11 +282,11 @@ def build_choice_label(name, fields, opts, bgcolor, include_table_bg=True, space
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}: Choice</b></td></tr>
+    <tr><td><b>{escape_html(name)}: Choice</b></td></tr>
     '''
 
     if d == 'informational' and opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
+        label += f'<tr><td>Options: {escape_html(opts_str)}</td></tr>\n'
 
     if fields:
         # Only add extra spacer if there was an Options row above; when there
@@ -312,7 +321,7 @@ def build_enumerated_label(name, enum_items, opts, bgcolor, include_table_bg=Tru
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}: Enumerated</b></td></tr>
+    <tr><td><b>{escape_html(name)}: Enumerated</b></td></tr>
     '''
 
     d = (detail or 'information').lower()
@@ -342,7 +351,7 @@ def build_enumerated_label(name, enum_items, opts, bgcolor, include_table_bg=Tru
                 # If allowed is None, show all; otherwise show up to allowed
                 to_show = enum_items if (allowed is None) else enum_items[:allowed]
                 for item in to_show:
-                    label += f'<tr><td align="left">{item[0]} {item[1]}</td></tr>\n'
+                    label += f'<tr><td align="left">{escape_html(item[0])} {escape_html(item[1])}</td></tr>\n'
                 if allowed is not None and total > allowed:
                     remaining = total - allowed
                     label += f'<tr><td align="left">... and {remaining} more</td></tr>\n'
@@ -364,11 +373,11 @@ def build_mapof_label(name, key_type, value_type, opts, bgcolor, include_table_b
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}: MapOf({key_type if key_type else "?"}, {value_type if value_type else "?"}){len_str}</b></td></tr>
+    <tr><td><b>{escape_html(name)}: MapOf({escape_html(key_type) if key_type else "?"}, {escape_html(value_type) if value_type else "?"}){escape_html(len_str)}</b></td></tr>
     '''
 
     if d == 'informational' and opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
+        label += f'<tr><td>Options: {escape_html(opts_str)}</td></tr>\n'
 
     label += "</table>>\n"
 
@@ -412,11 +421,11 @@ def build_arrayof_label(name, value_type, opts, bgcolor, include_table_bg=True, 
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}: ArrayOf({value_type if value_type else "?"}){len_str}</b></td></tr>
+    <tr><td><b>{escape_html(name)}: ArrayOf({escape_html(value_type) if value_type else "?"}){escape_html(len_str)}</b></td></tr>
     '''
 
     if d == 'informational' and opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
+        label += f'<tr><td>Options: {escape_html(opts_str)}</td></tr>\n'
 
     label += "</table>>\n"
 
@@ -438,11 +447,11 @@ def build_basic_label(name, type_label, opts, bgcolor, fields = [], include_tabl
 
     label = f'''<
     <table cellborder="0" cellpadding="1"{table_border}{table_bg}>
-    <tr><td><b>{name}: {type_label}{len_str}</b></td></tr>
+    <tr><td><b>{escape_html(name)}: {escape_html(type_label)}{escape_html(len_str)}</b></td></tr>
     '''
 
     if d == 'informational' and opts_str:
-        label += f'<tr><td>Options: {opts_str}</td></tr>\n'
+        label += f'<tr><td>Options: {escape_html(opts_str)}</td></tr>\n'
 
     if fields:
         # Only add spacer if type-level options were displayed above
