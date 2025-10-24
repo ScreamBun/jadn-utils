@@ -288,14 +288,15 @@ class GvGenerator:
         opts = row.get("opts", [])
         fields = row.get("fields", [])
         
-        for field in fields:
-            if field[2] not in self.primitive_types:
-                field_opts = safe_get_field_item(field, 3)
-                mult = get_multiplicity_label(field_opts)
-                if mult:
-                    self._edge(dot, row["name"], field[2], label=field[1], headlabel=mult, taillabel="1")
-                else:
-                    self._edge(dot, row["name"], field[2], label=field[1], taillabel="1")                      
+        if fields is not None:
+            for field in fields:
+                if field[2] not in self.primitive_types:
+                    field_opts = safe_get_field_item(field, 3)
+                    mult = get_multiplicity_label(field_opts)
+                    if mult:
+                        self._edge(dot, row["name"], field[2], label=field[1], headlabel=mult, taillabel="1")
+                    else:
+                        self._edge(dot, row["name"], field[2], label=field[1], taillabel="1")                      
                 
     def build_enum_node(self, row, dot):
         opts = row.get("opts", [])
