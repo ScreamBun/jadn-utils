@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+from jadnutils.utils.jadn_utils import get_field_by_data, get_type
 
 ############### HTML Convert Utils ###############
 def build_type_summary_html(name, type_val, options, description):
@@ -102,15 +103,20 @@ def get_theme_css():
 		return ''
 
 ############### JSON Convert Utils ###############
-def strip_keys(json_obj):
+def strip_keys(jadn_types, json_obj):
 	"""
 	Recursively strip keys from JSON objects, returning only values.
 	Example: {"a": 1, "b": 2} => [1, 2]
 	"""
 	if isinstance(json_obj, dict): # {a:1, b:2}
-		return [strip_keys(value) for value in json_obj.values()]
+		field = get_field_by_data(jadn_types, json_obj)
+		type = get_type(field)
+		if type == "Record":
+			return [strip_keys(jadn_types, value) for value in json_obj.values()]
+		else:
+			return {key: strip_keys(jadn_types, value) for key, value in json_obj.items()}
 	elif isinstance(json_obj, list): # [{a:1, b:2}]
-		return [strip_keys(item) for item in json_obj]
+		return [strip_keys(jadn_types, item) for item in json_obj]
 	else: # value base case
 		return json_obj
 
