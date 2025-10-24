@@ -116,7 +116,7 @@ class GvGenerator:
 
     # Basic is used for record, map and array    
     def build_basic_node(self, row, dot, type_label="Record"):
-        fields = row["fields"]
+        fields = row.get("fields", [])
         opts = row.get("opts", [])
         # get per-type fillcolor from style, fallback to LightSkyBlue
         per_type = self.style.get('per_type_attrs', {})
@@ -182,7 +182,7 @@ class GvGenerator:
         dot.edge(tail, head, **attrs)
             
     def build_basic_edges(self, row, dot):
-        fields = row["fields"]
+        fields = row.get("fields", [])
         opts = row.get("opts", [])
         
         for field in fields:
@@ -267,8 +267,8 @@ class GvGenerator:
                 self._edge(dot, row["name"], value_type, label="value", taillabel="1")            
 
     def build_choice_node(self, row, dot):
-        opts = row["opts"]
-        fields = row["fields"]
+        opts = row.get("opts", [])
+        fields = row.get("fields", [])
         per_type = self.style.get('per_type_attrs', {})
         bgcolor = per_type.get('Choice', {}).get('fillcolor', self.COLOR_LIGHTSKYBLUE)
         node_shape = per_type.get('Choice', {}).get('shape', self.NODE_SHAPE_PLAIN)
@@ -285,8 +285,8 @@ class GvGenerator:
         dot.node(row["name"], label=label, **node_attrs)
                 
     def build_choice_edges(self, row, dot):
-        opts = row["opts"]
-        fields = row["fields"]
+        opts = row.get("opts", [])
+        fields = row.get("fields", [])
         
         for field in fields:
             if field[2] not in self.primitive_types:
@@ -298,8 +298,8 @@ class GvGenerator:
                     self._edge(dot, row["name"], field[2], label=field[1], taillabel="1")                      
                 
     def build_enum_node(self, row, dot):
-        opts = row["opts"]
-        enum_items = row["fields"]
+        opts = row.get("opts", [])
+        enum_items = row.get("fields", [])
         per_type = self.style.get('per_type_attrs', {})
         bgcolor = per_type.get('Enumerated', {}).get('fillcolor', self.COLOR_PALEGREEN)
         node_shape = per_type.get('Enumerated', {}).get('shape', self.NODE_SHAPE_PLAIN)
