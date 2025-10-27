@@ -103,7 +103,7 @@ def get_theme_css():
 		return ''
 
 ############### JSON Convert Utils ###############
-def strip_keys(jadn_types, json_obj):
+def serialize_as_compact(jadn_types, json_obj):
 	"""
 	Recursively strip keys from JSON objects, returning only values.
 	Example: {"a": 1, "b": 2} => [1, 2]
@@ -112,11 +112,11 @@ def strip_keys(jadn_types, json_obj):
 		field = get_field_by_data(jadn_types, json_obj)
 		type = get_type(field)
 		if type == "Record":
-			return [strip_keys(jadn_types, value) for value in json_obj.values()]
+			return [serialize_as_compact(jadn_types, value) for value in json_obj.values()]
 		else:
-			return {key: strip_keys(jadn_types, value) for key, value in json_obj.items()}
+			return {key: serialize_as_compact(jadn_types, value) for key, value in json_obj.items()}
 	elif isinstance(json_obj, list): # [{a:1, b:2}]
-		return [strip_keys(jadn_types, item) for item in json_obj]
+		return [serialize_as_compact(jadn_types, item) for item in json_obj]
 	else: # value base case
 		return json_obj
 

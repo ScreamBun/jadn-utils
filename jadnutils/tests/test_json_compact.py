@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from jadnutils.utils.conversion_utils import strip_keys
+from jadnutils.utils.conversion_utils import serialize_as_compact
 from jadnutils.json.convert_compact import convert_to_compact
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
@@ -28,7 +28,7 @@ def test_convert_to_compact():
     assert compact_json
 
 #### TEST STRIP KEYS UTIL
-def test_strip_keys():
+def test_compact_serialize():
     jadn_schema = {
         "types": [
             ["People", "Array", [], "", [
@@ -61,9 +61,9 @@ def test_strip_keys():
         ["Alice", "B239-5921-348", "the 27th of June 1982"]
     ]
 
-    assert strip_keys(jadn_types, nested_json) == expected_json
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
 
-def test_strip_keys_2():
+def test_compact_serialize_2():
     jadn_schema = {
         "types": [
             ["Person", "Record", [], "", [
@@ -83,9 +83,9 @@ def test_strip_keys_2():
 
     expected_json = ['Hamilton', 20, [32.2912, -64.7864]]
 
-    assert strip_keys(jadn_types, nested_json) == expected_json
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
 
-def test_strip_keys_3():
+def test_compact_serialize_3():
     jadn_schema = {
         "types": [
             ["States", "Array", [], "", [
@@ -119,9 +119,9 @@ def test_strip_keys_3():
 
     expected_json = [["St. Louis", "Missouri", "38.627003", "-90.199402"],["Seattle", "Washington", "47.60621", "-122.33207"]]
 
-    assert strip_keys(jadn_types, nested_json) == expected_json
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
 
-def test_strip_keys_4():
+def test_compact_serialize_4():
     """
     Test case where example is NOT all records
     """
@@ -167,6 +167,6 @@ def test_strip_keys_4():
     }
 
     expected_json = {"Person": {"name": "Test Person", "address": ["12345", "Columbia", "Maryland", 11111], "house_info": {"purchase_amount": 100000, "date_purchased": "2023-01-01"}}}
-    compact_json = strip_keys(jadn_types, nested_json)
+    compact_json = serialize_as_compact(jadn_types, nested_json)
 
     assert compact_json == expected_json
