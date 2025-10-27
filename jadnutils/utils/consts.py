@@ -379,11 +379,11 @@ OPTION_ID = {   # Pre-computed reverse index - MUST match TYPE_OPTIONS and FIELD
 # Formats specifying a textual representation for Binary, Integer, Number, or Array types
 CONCISE_IGNORE_FORMATS = {
     "/dayTimeDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
-    "/yearMonthDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
+    "/yearMonthDuration": lambda x: (lambda d: int((d.years or 0) * 12 + (d.months or 0)))(isodate.parse_duration(x)),
     "/gYearMonth": lambda x: int(datetime.combine(isodate.parse_date(x.lstrip('-') + "-01"), datetime.min.time()).timestamp()),  # Convert date to datetime then timestamp
     "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('-'))).timestamp()), # 1972 used by many parsers
     "/ipv4-net": lambda x: bytes(x, 'utf-8'),
-    "/ipv6-net": lambda x: bytes(x, 'utf-8'),
+    "/ipv4-net": lambda x: bytes(x, 'utf-8'),
     "/ipv4-addr": lambda x: bytes(x, 'utf-8'),
     "/ipv6-addr": lambda x: bytes(x, 'utf-8')
 }

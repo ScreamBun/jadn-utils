@@ -29,7 +29,7 @@ def get_children(field):
     Get the children from a field definition.
     """
     if not isinstance(field, list):
-        raise ValueError("Field definition must be a list: ", field)
+        return None
     if isinstance(field[0], str) and len(field) > 4:
         return field[4]
     else:
@@ -40,7 +40,7 @@ def get_options(field):
     Get the options from a field definition.
     """
     if not isinstance(field, list):
-        raise ValueError("Field definition must be a list: ", field)
+        return None
     if isinstance(field[0], str):
         return field[2]
     elif isinstance(field[1], str) and len(field) > 3:
@@ -53,7 +53,7 @@ def get_options(field):
     Get the options from a field definition.
     """
     if not isinstance(field, list):
-        raise ValueError("Field definition must be a list: ", field)
+        return None
     if isinstance(field[0], str):
         return field[2]
     elif isinstance(field[1], str) and len(field) > 3:

@@ -131,7 +131,7 @@ def serialize_as_concise(jadn_types, json_obj):
 		type = get_type(field)
 		children = get_children(field)
 		type_options = get_options(field)
-		field_options = {child[1]: get_options(child) for child in children}
+		field_options = {child[1]: get_options(child) for child in children} if children else {}
 		convert_format_value(type_options, json_obj)
 		convert_format_value(field_options, json_obj)
 

@@ -97,3 +97,178 @@ def test_concise_serialize_gmonthday():
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_daytimeduration():
+    jadn_schema = {
+        "types": [
+            ["People", "Array", [], "", [
+                [1, "bob", "Person", [], ""],
+                [2, "alice", "Person", [], ""]
+            ]],
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "dob", "String", ["/dayTimeDuration"], ""],
+                [4, "weight", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = [{
+        "name": "Bob",
+        "id": "K193-3498-234",
+        "dob": "P1DT12H30M45S",
+        "weight": 79546
+        }, {
+        "name": "Alice",
+        "id": "B239-5921-348",
+        "dob": "PT6H15M"
+    }]
+    
+    expected_json = [
+        ["Bob", "K193-3498-234", 131445, 79546],
+        ["Alice", "B239-5921-348", 22500]
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_yearmonthduration():
+    jadn_schema = {
+        "types": [
+            ["People", "Array", [], "", [
+                [1, "bob", "Person", [], ""],
+                [2, "alice", "Person", [], ""]
+            ]],
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "dob", "String", ["/yearMonthDuration"], ""],
+                [4, "weight", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = [{
+        "name": "Bob",
+        "id": "K193-3498-234",
+        "dob": "P2Y6M",
+        "weight": 79546
+        }, {
+        "name": "Alice",
+        "id": "B239-5921-348",
+        "dob": "P1Y3M"
+    }]
+    
+    expected_json = [
+        ["Bob", "K193-3498-234", 30, 79546],
+        ["Alice", "B239-5921-348", 15]
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_ipv4addr():
+    jadn_schema = {
+        "types": [
+            ["People", "Array", [], "", [
+                [1, "bob", "Person", [], ""],
+                [2, "alice", "Person", [], ""]
+            ]],
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "addr", "String", ["/ipv4-addr"], ""],
+                [4, "weight", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = [{
+        "name": "Bob",
+        "id": "K193-3498-234",
+        "addr": "192.168.1.100",
+        "weight": 79546
+        }, {
+        "name": "Alice",
+        "id": "B239-5921-348",
+        "addr": "10.0.0.1"
+    }]
+    
+    expected_json = [
+        ["Bob", "K193-3498-234", b'192.168.1.100', 79546],
+        ["Alice", "B239-5921-348", b'10.0.0.1']
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_ipv6addr():
+    jadn_schema = {
+        "types": [
+            ["People", "Array", [], "", [
+                [1, "bob", "Person", [], ""],
+                [2, "alice", "Person", [], ""]
+            ]],
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "addr", "String", ["/ipv6-addr"], ""],
+                [4, "weight", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = [{
+        "name": "Bob",
+        "id": "K193-3498-234",
+        "addr": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+        "weight": 79546
+        }, {
+        "name": "Alice",
+        "id": "B239-5921-348",
+        "addr": "fe80::1"
+    }]
+    
+    expected_json = [
+        ["Bob", "K193-3498-234", b'2001:0db8:85a3:0000:0000:8a2e:0370:7334', 79546],
+        ["Alice", "B239-5921-348", b'fe80::1']
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_ipv4net():
+    jadn_schema = {
+        "types": [
+            ["People", "Array", [], "", [
+                [1, "bob", "Person", [], ""],
+                [2, "alice", "Person", [], ""]
+            ]],
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "network", "Array", ["/ipv4-net"], ""],
+                [4, "weight", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = [{
+        "name": "Bob",
+        "id": "K193-3498-234",
+        "network": "192.168.1.0/24",
+        "weight": 79546
+        }, {
+        "name": "Alice",
+        "id": "B239-5921-348",
+        "network": "10.0.0.0/8"
+    }]
+    
+    expected_json = [
+        ["Bob", "K193-3498-234", b'192.168.1.0/24', 79546],
+        ["Alice", "B239-5921-348", b'10.0.0.0/8']
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
