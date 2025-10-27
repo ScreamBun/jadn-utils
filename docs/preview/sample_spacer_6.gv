@@ -1,0 +1,19 @@
+// JADN Schema
+digraph {
+	Album
+	Album [label=<
+    <table cellborder="0" cellpadding="1" bgcolor="LightSkyBlue">
+    <tr><td><b>Album:</b> Record </td></tr>
+    <tr><td height="6"></td></tr>
+<tr><td align="left">id id: String     </td></tr>
+<tr><td align="left">tracks tracks: Array     </td></tr>
+</table>> shape=plain]
+	Track [label=<
+    <table cellborder="0" cellpadding="1" bgcolor="LightSkyBlue">
+    <tr><td><b>Track:</b> Record </td></tr>
+    <tr><td height="6"></td></tr>
+<tr><td align="left">title title: String     </td></tr>
+</table>> shape=plain]
+	String [label="String: String" fillcolor=palegreen shape=ellipse style=filled]
+	Album -> Array [label=tracks taillabel=1]
+}

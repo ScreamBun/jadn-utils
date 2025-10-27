@@ -6,20 +6,9 @@ import json as _json
 from jadnutils.html.html_converter import HtmlConverter
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
-from music_lib import j_schema
+from jadnutils.utils.utils import write_to_output
+from jadnutils.tests.test_data.music_lib import j_schema
 
-
-def write_html_output(html_output, filename):
-    """
-    Write HTML output to a file in the output directory and print it.
-    """
-    output_dir = "output"
-    output_path = os.path.join(output_dir, filename)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html_output)
-    print(html_output)
     
 def test_music_lib_to_html():
     json_data = j_schema
@@ -30,7 +19,7 @@ def test_music_lib_to_html():
     converter = HtmlConverter(json_data)
     
     html_output = converter.jadn_to_html(run_validation=False)
-    write_html_output(html_output, "test_jadn_to_html_music_lib.html")
+    write_to_output(html_output, "test_jadn_to_html_music_lib.html")
     
     assert "<table" in html_output
     assert '<style>' in html_output

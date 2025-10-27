@@ -1,11 +1,23 @@
 
   
 
+from typing import Union
+
+
 PRIMITIVE_TYPES = ("Binary", "Boolean", "Integer", "Number", "String")
 SELECTOR_TYPES = ("Enumerated", "Choice")
 STRUCTURED_TYPES = ("Array", "ArrayOf", "Map", "MapOf", "Record")
 FIELD_TYPES = ("Enumerated", "Choice", "Array", "Map", "Record")  # Types that have defined fields
 CORE_TYPES = PRIMITIVE_TYPES + SELECTOR_TYPES + STRUCTURED_TYPES
+
+# Datatype Definition columns
+TypeName = 0            # Name of the type being defined
+CoreType = 1            # Core type of the type being defined
+TypeOptions = 2         # An array of zero or more TYPE_OPTIONS
+TypeDesc = 3            # A non-normative description of the type
+Fields = 4              # List of one or more items or fields
+
+OPTION_TYPES = Union[int, float, str]
 
 # RFC 3339: Date and Time Formats
 TIME_FORMAT = "%H:%M:%S"
@@ -299,3 +311,67 @@ HTML_Escapes = {
     "÷": "&divide;"  # division
 }
 
+
+TYPE_OPTIONS = {        # Option ID: (name, value type, canonical order) # ASCII ID
+    0x3d: ('id', lambda x: True, 1),          # '=', Enumerated type and Choice/Map/Record keys are ID not Name
+    0x2a: ('vtype', lambda x: x, 2),          # '*', Value type for ArrayOf and MapOf
+    0x2b: ('ktype', lambda x: x, 3),          # '+', Key type for MapOf
+    0x23: ('enum', lambda x: x, 4),           # '#', enumeration derived from Array/Choice/Map/Record type
+    0x3e: ('pointer', lambda x: x, 5),        # '>', enumeration of pointers derived from Array/Choice/Map/Record type
+    0x2f: ('format', lambda x: x, 6),         # '/', semantic validation keyword, may affect serialization
+    0x25: ('pattern', lambda x: x, 7),        # '%', regular expression that a string must match
+    0x77: ('minExclusive', None, 8),          # 'w', minimum numeric/string value, excluding bound
+    0x78: ('maxExclusive', None, 9),          # 'x', maximum numeric/string value, excluding bound
+    0x79: ('minInclusive', None, 10),         # 'y', minimum numeric/string value
+    0x7a: ('maxInclusive', None, 11),         # 'z', maximum numeric/string value
+    0x7b: ('minLength', int, 12),             # '{', minimum byte or text string length, collection item count
+    0x7d: ('maxLength', int, 13),             # '}', maximum byte or text string length, collection item count
+    0x71: ('unique', lambda x: True, 14),     # 'q', ArrayOf instance must not contain duplicates
+    0x73: ('set', lambda x: True, 15),        # 's', ArrayOf instance is unordered and unique (set)
+    0x62: ('unordered', lambda x: True, 16),  # 'b', ArrayOf instance is unordered and not unique (bag)
+    0x6f: ('sequence', lambda x: True, 17),   # 'o', Map, MapOr or Record instance is ordered and unique (ordered set)
+    0x43: ('combine', lambda x: x, 18),       # 'C', Choice instance is a logical combination (anyOf, allOf, oneOf)
+    0x61: ('abstract', lambda x: True, 19),   # 'a', Inheritance: abstract, non-instantiatable
+    0x72: ('restricts', lambda x: x, 20),     # 'r', Inheritance: restriction - subset of referenced type
+    0x65: ('extends', lambda x: x, 21),       # 'e', Inheritance: extension - superset of referenced type
+    0x66: ('final', lambda x: True, 22),      # 'f', Inheritance: final - cannot have subtype
+    0x75: ('default', lambda x: x, 23),       # 'u', Default value
+    0x76: ('const', lambda x: x, 24),         # 'v', Constant value
+}
+
+MAX_DEFAULT = -1            # maxOccurs sentinel value: Upper size limit defaults to JADN or package limit
+MAX_UNLIMITED = -2   
+
+OPTION_ID = {   # Pre-computed reverse index - MUST match TYPE_OPTIONS and FIELD_OPTIONS
+    'id':       chr(61),
+    'vtype':    chr(42),
+    'ktype':    chr(43),
+    'enum':     chr(35),
+    'pointer':  chr(62),
+    'format':   chr(47),
+    'pattern':  chr(37),
+    'minExclusive': chr(119),
+    'maxExclusive': chr(120),
+    'minInclusive': chr(121),
+    'maxInclusive': chr(122),
+    'minLength':    chr(123),
+    'maxLength':    chr(125),
+    'unique':   chr(113),
+    'set':      chr(115),
+    'unordered': chr(98),
+    'sequence': chr(111),
+    'combine':  chr(67),
+    'abstract': chr(97),
+    'restricts': chr(114),
+    'extends':  chr(101),
+    'final':    chr(102),
+    'default':  chr(117),
+    'const':    chr(118),
+    'minOccurs':    chr(91),
+    'maxOccurs':    chr(93),
+    'tagid':    chr(38),
+    'dir':      chr(60),
+    'key':      chr(75),
+    'link':     chr(76),
+    'not':      chr(78),
+}

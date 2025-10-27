@@ -15,7 +15,7 @@ j_schema = {
         [2, "album_title", "String", [], "publisher's title for this album"],
         [3, "pub_data", "Publication-Data", [], "metadata about the album's publication"],
         [4, "tracks", "Track", ["]0"], "individual track descriptions and content"],
-        [5, "total_tracks", "Integer", ["{1"], "total track count"],
+        [5, "total_tracks", "Integer", ["w1"], "total track count"],
         [6, "cover_art", "Image", ["[0"], "cover art image for this album"]
       ]],
     ["Publication-Data", "Record", [], "who and when of publication", [
@@ -51,13 +51,15 @@ j_schema = {
         [2, "metadata", "Track-Info", [], "description of the track"]
       ]],
     ["Track-Info", "Record", [], "information about the individual audio tracks", [
-        [1, "track_number", "Integer", ["[1"], "track sequence number"],
+        [1, "track_number", "Integer", ["w1"], "track sequence number"],
         [2, "title", "String", [], "track title"],
-        [3, "length", "Integer", ["{1"], "length of track in seconds; anticipated user display is mm:ss; minimum length is 1 second"],
+        [3, "length", "Integer", ["w1"], "length of track in seconds; anticipated user display is mm:ss; minimum length is 1 second"],
         [4, "audio_format", "Audio-Format", [], "format of the digital audio"],
         [5, "featured_artist", "Artist", ["q", "[0", "]0"], "notable guest performers"],
         [6, "track_art", "Image", ["[0"], "each track can have optionally have individual artwork"],
-        [7, "genre", "Genre", [], ""]
+        [7, "genre", "Genre", [], ""],
+        [8, "artists", "Artists", [], ""],
+        [9, "lyrics", "Lyrics", [], ""]
       ]],
     ["Audio-Format", "Enumerated", [], "can only be one, but can extend list", [
         [1, "MP3", ""],
@@ -77,6 +79,12 @@ j_schema = {
         [6, "classical", ""],
         [7, "spoken_word", ""]
       ]],
-    ["File-Path", "String", [], "local storage location of file with directory path from root, filename, and extension"]
+    ["File-Path", "String", [], "local storage location of file with directory path from root, filename, and extension"],
+    ["Artists", "Array", [], "", [
+        [1, "name", "String", [], ""],
+        [2, "company", "String", [], ""]
+      ]],
+    ["Lyric", "String", [], "", []],
+    ["Lyrics", "ArrayOf", ["*Lyric"], "", []]
   ]
 }
