@@ -1,8 +1,8 @@
-
-  
-
 from typing import Union
-
+from datetime import datetime
+import time
+import isodate
+from dateutil import parser
 
 PRIMITIVE_TYPES = ("Binary", "Boolean", "Integer", "Number", "String")
 SELECTOR_TYPES = ("Enumerated", "Choice")
@@ -374,4 +374,16 @@ OPTION_ID = {   # Pre-computed reverse index - MUST match TYPE_OPTIONS and FIELD
     'key':      chr(75),
     'link':     chr(76),
     'not':      chr(78),
+}
+
+# Formats specifying a textual representation for Binary, Integer, Number, or Array types
+CONCISE_IGNORE_FORMATS = {
+    "/dayTimeDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
+    "/yearMonthDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
+    "/gYearMonth": lambda x: int(datetime.combine(isodate.parse_date(x.lstrip('-') + "-01"), datetime.min.time()).timestamp()),  # Convert date to datetime then timestamp
+    "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('-'))).timestamp()), # 1972 used by many parsers
+    "/ipv4-net": lambda x: bytes(x, 'utf-8'),
+    "/ipv6-net": lambda x: bytes(x, 'utf-8'),
+    "/ipv4-addr": lambda x: bytes(x, 'utf-8'),
+    "/ipv6-addr": lambda x: bytes(x, 'utf-8')
 }

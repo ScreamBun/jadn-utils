@@ -1,4 +1,4 @@
-from jadnutils.utils.conversion_utils import strip_keys, validate_json
+from jadnutils.utils.conversion_utils import serialize_as_concise, validate_json
 
 def convert_to_concise(jadn_schema, json_obj):
     """
@@ -11,7 +11,7 @@ def convert_to_concise(jadn_schema, json_obj):
             raise ValueError("Invalid JSON Object", json_obj)
 
         jadn_types = jadn_schema.get('types', {})
-        concise_json = strip_keys(jadn_types, json_obj)
+        concise_json = serialize_as_concise(jadn_types, json_obj)
 
         # Validate Concise JSON Object
         valid_concise = validate_json(concise_json)

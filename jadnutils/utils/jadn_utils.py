@@ -48,6 +48,19 @@ def get_options(field):
     else:
         return []
 
+def get_options(field):
+    """
+    Get the options from a field definition.
+    """
+    if not isinstance(field, list):
+        raise ValueError("Field definition must be a list: ", field)
+    if isinstance(field[0], str):
+        return field[2]
+    elif isinstance(field[1], str) and len(field) > 3:
+        return field[3]
+    else:
+        return []
+
 def get_field_by_name(jadn_types, name):
     """
     Retrieve a field definition by its name from jadn_types
@@ -79,6 +92,18 @@ def get_field_by_data(jadn_types, data):
                 break
         if found:
             return jadn_type
+    return None
+
+def get_field_from_struct(struct_field, value):
+    """
+    Retrieve a field definition from a structured type by its value
+    """
+    if not is_structure(struct_field) and not is_selector(struct_field):
+        raise ValueError("Struct field definition must be a list: ", struct_field)
+    children = get_children(struct_field)
+    for field in children:
+        if field[1] == value:
+            return field
     return None
 
 def is_structure(cls) -> bool:
