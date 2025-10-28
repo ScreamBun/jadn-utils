@@ -76,16 +76,29 @@ def get_field_by_data(jadn_types, data):
     """
     if isinstance(data, dict):
         field_names = set(data.keys())
+        try:
+            field_values = set(data.values())
+        except TypeError as e:
+            field_values = []
     elif isinstance(data, list):
         field_names = [get_field_by_data(jadn_types, item) for item in data]
     else:
-        return None
+        field_values = [data]
+        field_names = []
 
     for jadn_type in jadn_types:
         found = True
         children = get_children(jadn_type)
         if not children:
             continue
+
+        # Account for Enumerated
+        if len(children[0]) == 3 and len(field_values) == 1:
+            children_names = [child[1] for child in children]
+            for val in field_values:
+                if val in children_names:
+                    return jadn_type
+                
         for field in children:
             if field[1] not in field_names and ("[0" not in get_options(field)):
                 found = False
@@ -98,7 +111,7 @@ def get_field_from_struct(struct_field, value):
     """
     Retrieve a field definition from a structured type by its value
     """
-    if not is_structure(struct_field) and not is_selector(struct_field):
+    if not get_type(struct_field) in STRUCTURED_TYPES and not get_type(struct_field) in SELECTOR_TYPES:
         raise ValueError("Struct field definition must be a list: ", struct_field)
     children = get_children(struct_field)
     for field in children:

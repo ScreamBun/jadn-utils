@@ -272,3 +272,31 @@ def test_concise_serialize_ipv4net():
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_enumerated():
+    jadn_schema = {
+        "types": [
+            ["ColorEnum", "Enumerated", [], "", [
+                [1, "Red", ""],
+                [2, "Green", ""],
+                [3, "Blue", ""]
+            ]],
+            ["Item", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "color", "ColorEnum", [], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = {
+        "name": "Ball",
+        "color": "Red"
+    }
+    
+    expected_json = [
+        "Ball",
+        1
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
