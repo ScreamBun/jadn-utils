@@ -1,5 +1,5 @@
 from typing import Union
-from jadnutils.utils.consts import MAX_DEFAULT, MAX_UNLIMITED, OPTION_ID, OPTION_TYPES, SELECTOR_TYPES, STRUCTURED_TYPES, TYPE_OPTIONS
+from jadnutils.utils.consts import MAX_DEFAULT, MAX_UNLIMITED, OPTION_ID, OPTION_TYPES, SELECTOR_TYPES, STRUCTURED_TYPES, TYPE_OPTIONS, CORE_TYPES
 
 
 def get_title(data):
@@ -98,6 +98,13 @@ def get_field_by_data(jadn_types, data):
             for val in field_values:
                 if val in children_names:
                     return jadn_type
+
+        # Account for Choice
+        if get_true_type(jadn_types, jadn_type) == "Choice":
+            children_names = [child[1] for child in children]
+            for name in field_names:
+                if name in children_names:
+                    return jadn_type
                 
         for field in children:
             if field[1] not in field_names and ("[0" not in get_options(field)):
@@ -106,6 +113,22 @@ def get_field_by_data(jadn_types, data):
         if found:
             return jadn_type
     return None
+
+def get_true_type(jadn_types, field):
+    """
+    Retrieve the true type of a JADN type definition, resolving any type references.
+    """
+    field_type = get_type(field)
+    if field_type in CORE_TYPES:
+        return field_type
+    
+    field_name = field[0]
+    type_def = get_field_by_name(jadn_types, field_name)
+
+    if not type_def:
+        return field
+    
+    return get_true_type(jadn_types, type_def)
 
 def get_field_from_struct(struct_field, value):
     """

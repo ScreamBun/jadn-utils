@@ -300,3 +300,32 @@ def test_concise_serialize_enumerated():
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_choice():
+    jadn_schema = {
+        "types": [
+            ["ChoiceType", "Choice", [], "", [
+                [1, "optionA", "String", [], ""],
+                [2, "optionB", "Integer", [], ""]
+            ]],
+            ["Item", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "choiceField", "ChoiceType", [], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = {
+        "name": "Gadget",
+        "choiceField": {
+            "optionB": 42
+        }
+    }
+    
+    expected_json = [
+        "Gadget",
+        {2: 42}
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json

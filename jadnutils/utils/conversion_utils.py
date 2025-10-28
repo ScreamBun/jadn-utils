@@ -141,8 +141,8 @@ def serialize_as_concise(jadn_types, json_obj):
 			enum_field = get_field_from_struct(field, list(json_obj.values())[0])
 			return enum_field[0] if enum_field else None
 		elif type == "Choice":
-			choice_field = get_field_from_struct(field, json_obj.get(field[0]))
-			return {choice_field[0] : serialize_as_concise(jadn_types, json_obj.get(field[0]))} if choice_field else None
+			choice_field = get_field_from_struct(field, list(json_obj.keys())[0])
+			return {choice_field[0] : serialize_as_concise(jadn_types, json_obj.get(choice_field[1]))} if choice_field else None
 		elif type == "Map":
 			map_field = get_field_from_struct(field, list(json_obj.keys())[0])
 			if map_field:
