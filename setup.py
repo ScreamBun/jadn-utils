@@ -6,7 +6,9 @@ setup(
     packages=["jadnutils", "jadnutils.json", "jadnutils.html", "jadnutils.utils", "jadnutils.support", "jadnutils.gv", "jadnutils.gv.utils"],
     install_requires=[
         "pytest",
-        "pandas"
+        "pandas",
+        "isodate",
+        "python-dateutil"
     ],
     include_package_data=True,
     package_data={
