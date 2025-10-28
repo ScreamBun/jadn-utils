@@ -273,6 +273,38 @@ def test_concise_serialize_ipv4net():
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
+def test_concise_serialize_binary():
+    """
+    Test /x, /X, /base64Binary, /b64
+    """
+    jadn_schema = {
+        "types": [
+            ["DataRecord", "Record", [], "", [
+                [1, "dataHex", "String", ["/x"], ""],
+                [2, "dataBase64", "String", ["/base64Binary"], ""],
+                [3, "dataBin", "String", ["/b64"], ""],
+                [4, "dataXUpper", "String", ["/X"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = {
+        "dataHex": "4d616e",
+        "dataBase64": "TWFu",
+        "dataBin": "TWFu",
+        "dataXUpper": "4D616E"
+    }
+    
+    expected_json = [
+        b'Man',
+        b'TWFu',
+        b'TWFu',
+        b'Man'
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
 def test_concise_serialize_enumerated():
     jadn_schema = {
         "types": [
@@ -409,7 +441,7 @@ def test_concise_serialize_map():
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
-def test_serialize_concise_map_id():
+def test_concise_serialize_map_id():
     jadn_schema = {
     "meta": {
         "roots": ["Map-Name"]

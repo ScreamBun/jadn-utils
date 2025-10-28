@@ -385,5 +385,9 @@ CONCISE_IGNORE_FORMATS = {
     "/ipv4-net": lambda x: bytes(x, 'utf-8'),
     "/ipv4-net": lambda x: bytes(x, 'utf-8'),
     "/ipv4-addr": lambda x: bytes(x, 'utf-8'),
-    "/ipv6-addr": lambda x: bytes(x, 'utf-8')
+    "/ipv6-addr": lambda x: bytes(x, 'utf-8'),
+    "/x": lambda x: bytes.fromhex(x),
+    "/X": lambda x: bytes.fromhex(x),
+    "/base64Binary": lambda x: bytes(x, 'utf-8'),
+    "/b64": lambda x: bytes(x, 'utf-8'),
 }
