@@ -168,6 +168,109 @@ def test_concise_serialize_yearmonthduration():
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
+def test_concise_serialize_gyear():
+    jadn_schema = {
+        "types": [
+            ["People", "Array", [], "", [
+                [1, "bob", "Person", [], ""],
+                [2, "alice", "Person", [], ""]
+            ]],
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "dob", "String", ["/gYear"], ""],
+                [4, "weight", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = [{
+        "name": "Bob",
+        "id": "K193-3498-234",
+        "dob": "-1990",
+        "weight": 79546
+        }, {
+        "name": "Alice",
+        "id": "B239-5921-348",
+        "dob": "-1982"
+    }]
+    
+    expected_json = [
+        ["Bob", "K193-3498-234", 631170000, 79546],
+        ["Alice", "B239-5921-348", 378709200]
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_formats():
+    jadn_schema = {
+    "meta": {
+        "package": "https://www.test.com",
+        "roots": ["Decimal-Integer", "Binary-Fmt", "Integer-Fmts", "String-Fmts"]
+    },
+    "types": [
+        ["Decimal-Integer", "Record", [], "", [
+            [1, "u64", "Integer", ["/u64"], ""],
+            [2, "i64", "Integer", ["/i64"], ""],
+            [3, "non_negative_integer", "Integer", ["/nonNegativeInteger"], ""],
+            [4, "negative_integer", "Integer", ["/negativeInteger"], ""],
+            [5, "non_positive_integer", "Integer", ["/nonPositiveInteger"], ""],
+            [6, "positive_integer", "Integer", ["/positiveInteger"], ""],
+            [7, "unsigned_short", "Integer", ["/u16"], ""]
+        ]],
+        ["Binary-Fmt", "Record", [], "", [
+            [1, "lower_x", "Binary", ["/x", "[0"], ""],
+            [2, "upper_x", "Binary", ["/X", "[0"], ""],
+            [3, "base64", "Binary", ["/b64", "[0"], ""]
+        ]],
+        ["Integer-Fmts", "Record", [], "", [
+            [1, "int_date_time", "Integer", ["/date-time"], ""],
+            [2, "string_date_time", "String", ["/date-time"], ""],
+            [3, "int_date", "Integer", ["/date"], ""],
+            [4, "string_date", "String", ["/date"], ""],
+            [5, "time", "Integer", ["/time"], ""],
+            [6, "string_time", "String", ["/time"], ""],
+            [7, "g_year_month", "Integer", ["/gYearMonth"], ""],
+            [8, "g_year", "Integer", ["/gYear"], ""],
+            [9, "g_month_day", "Integer", ["/gMonthDay"], ""],
+            [10, "duration_test", "Integer", ["/duration"], ""],
+            [11, "day_time_duration", "Integer", ["/dayTimeDuration"], ""],
+            [12, "year_month_duration", "Integer", ["/yearMonthDuration"], ""]
+        ]],
+        ["String-Fmts", "Record", [], "", [
+            [1, "normalized_string", "String", ["/normalizedString"], ""],
+            [2, "token", "String", ["/token"], ""],
+            [3, "language", "String", ["/language"], ""],
+            [4, "name", "String", ["/name"], ""],
+            [5, "any_uri", "String", ["/anyUri"], ""],
+            [6, "qname", "String", ["/QName"], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+    "int_date_time": 1761664474,
+    "string_date_time": "2023-01-01T00:00+03:00",
+    "int_date": 1761664474,
+    "string_date": "2023-01-01",
+    "time": 1761664474,
+    "string_time": "12:00:00",
+    "g_year_month": "-1000-05",
+    "g_year": 1999,
+    "g_month_day": "--04-12Z",
+    "duration_test": 1,
+    "day_time_duration": "PT30M",
+    "year_month_duration": "P17M"
+    }
+
+    expected_json = [
+        1761664474, "2023-01-01T00:00+03:00", 1761664474, "2023-01-01", 1761664474, "12:00:00", -30599838238, 1999, 71902800, 1, 1800, 17
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
 def test_concise_serialize_ipv4addr():
     jadn_schema = {
         "types": [

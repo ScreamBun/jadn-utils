@@ -381,9 +381,10 @@ CONCISE_IGNORE_FORMATS = {
     "/dayTimeDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
     "/yearMonthDuration": lambda x: (lambda d: int((d.years or 0) * 12 + (d.months or 0)))(isodate.parse_duration(x)),
     "/gYearMonth": lambda x: int(datetime.combine(isodate.parse_date(x.lstrip('-') + "-01"), datetime.min.time()).timestamp()),  # Convert date to datetime then timestamp
-    "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('-'))).timestamp()), # 1972 used by many parsers
+    "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('Z')[0].split('+')[0].split('-'))).timestamp()), # 1972 used by many parsers, handle timezone
+    "/gYear": lambda x: x if isinstance(x, int) else int(parser.parse(x.split('+')[0].split('Z')[0] + "-01-01").timestamp()),  # Parse year with optional timezone, default to Jan 1
     "/ipv4-net": lambda x: bytes(x, 'utf-8'),
-    "/ipv4-net": lambda x: bytes(x, 'utf-8'),
+    "/ipv6-net": lambda x: bytes(x, 'utf-8'),
     "/ipv4-addr": lambda x: bytes(x, 'utf-8'),
     "/ipv6-addr": lambda x: bytes(x, 'utf-8'),
     "/x": lambda x: bytes.fromhex(x),

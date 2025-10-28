@@ -114,11 +114,19 @@ def get_field_by_data(jadn_types, data):
                 if name in children_names:
                     return jadn_type
                 
+        found_count = 0
+        opt_count = 0
         for field in children:
+            if field[1] in field_names:
+                found_count += 1
+                if len(field) > 3 and "[0" in field[3]:
+                    opt_count -= 1
+            if len(field) > 3 and "[0" in field[3]:
+                opt_count += 1
             if field[1] not in field_names and ("[0" not in get_options(field)):
                 found = False
                 break
-        if found:
+        if found and found_count + opt_count == len(field_names) + opt_count:
             return jadn_type
     return None
 
