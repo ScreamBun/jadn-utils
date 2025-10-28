@@ -301,6 +301,28 @@ def test_concise_serialize_enumerated():
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
+def test_concise_serialize_enumerated_id():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Enumerated-Name"]
+    },
+    "types": [
+        ["Enumerated-Name", "Enumerated", ["="], "", [
+            [1, "field_1", ""],
+            [2, "field_2", ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+    "Enumerated-Name": 1
+    }
+
+    expected_json = 1
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
 def test_concise_serialize_choice():
     jadn_schema = {
         "types": [
@@ -327,6 +349,30 @@ def test_concise_serialize_choice():
         "Gadget",
         {2: 42}
     ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_choice_id():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Choice-Name"]
+    },
+    "types": [
+        ["Choice-Name", "Choice", ["="], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+        "1": "test"
+    }
+
+    expected_json = {
+        1: "test"
+    }
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
@@ -360,6 +406,32 @@ def test_concise_serialize_map():
             2: 100
         }
     ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_serialize_concise_map_id():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Map-Name"]
+    },
+    "types": [
+        ["Map-Name", "Map", ["="], "", [
+            [1, "field_1", "String", [], ""],
+            [2, "field_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+    "field_1": "value1",
+    "field_2": "value2"
+    }
+
+    expected_json = {
+        1: "value1",
+        2: "value2"
+    }
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 

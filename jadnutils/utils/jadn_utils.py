@@ -92,16 +92,24 @@ def get_field_by_data(jadn_types, data):
         if not children:
             continue
 
+        true_type_def = get_true_type_def(jadn_types, jadn_type)
+
         # Account for Enumerated
         if len(children[0]) == 3 and len(field_values) == 1:
-            children_names = [child[1] for child in children]
+            if "=" in get_options(true_type_def): # Account for ID opt
+                children_names = [child[0] for child in children]
+            else:
+                children_names = [child[1] for child in children]
             for val in field_values:
                 if val in children_names:
                     return jadn_type
 
         # Account for Choice
-        if get_true_type(jadn_types, jadn_type) == "Choice":
-            children_names = [child[1] for child in children]
+        if get_type(true_type_def) == "Choice":
+            if "=" in get_options(true_type_def): # Account for ID opt
+                children_names = [str(child[0]) for child in children]
+            else:
+                children_names = [child[1] for child in children]
             for name in field_names:
                 if name in children_names:
                     return jadn_type
@@ -114,23 +122,26 @@ def get_field_by_data(jadn_types, data):
             return jadn_type
     return None
 
-def get_true_type(jadn_types, field):
+def get_true_type_def(jadn_types, field):
     """
     Retrieve the true type of a JADN type definition, resolving any type references.
     """
     field_type = get_type(field)
     if field_type in CORE_TYPES:
-        return field_type
+        return field
     
     field_name = field[0]
     type_def = get_field_by_name(jadn_types, field_name)
 
     if not type_def:
         return field
+
+    if get_type(type_def) in CORE_TYPES:
+        return type_def
     
     return get_true_type(jadn_types, type_def)
 
-def get_field_from_struct(struct_field, value):
+def get_field_from_struct(struct_field, value, id = False):
     """
     Retrieve a field definition from a structured type by its value
     """
@@ -138,8 +149,12 @@ def get_field_from_struct(struct_field, value):
         raise ValueError("Struct field definition must be a list: ", struct_field)
     children = get_children(struct_field)
     for field in children:
-        if field[1] == value:
-            return field
+        if id:
+            if str(field[0]) == str(value):
+                return field
+        else:
+            if field[1] == value:
+                return field
     return None
 
 def is_structure(cls) -> bool:
