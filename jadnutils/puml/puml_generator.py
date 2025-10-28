@@ -20,6 +20,16 @@ class PumlGenerator:
     INFORMATIONAL = 'informational'
     DETAIL_OPTS = {CONCEPTUAL, LOGICAL, INFORMATIONAL}
 
+    # Available PlantUML themes
+    AVAILABLE_THEMES = [
+        'amiga', 'aws-orange', 'black-knight', 'bluegray', 'blueprint',
+        'carbon-gray', 'cerulean', 'cloudscape-design', 'crt-amber', 'cyborg',
+        'hacker', 'lightgray', 'mars', 'materia', 'metal', 'mimeograph',
+        'minty', 'mono', '_none_', 'plain', 'reddress-darkblue',
+        'reddress-lightblue', 'sandstone', 'silver', 'sketchy', 'spacelab',
+        'sunlust', 'superhero', 'toy', 'united', 'vibrant'
+    ]
+
     # PlantUML styling options
     STYLE_DEFAULT = {
         'detail': CONCEPTUAL,
@@ -30,13 +40,84 @@ class PumlGenerator:
         'relationship_style': '--',  # '--', '->', '<->', etc.
         'show_primitive_types': False,
         'group_by_package': True,
-        'theme': None,  # PlantUML theme name
+        'theme': 'aws-orange',  # PlantUML theme name
         'title': None,
         'note_position': 'right'  # 'left', 'right', 'top', 'bottom'
     }
 
     basic_types = ["Record", "Map", "Array"]
     primitive_types = ["String", "Integer", "Binary", "Boolean", "Number"]
+    
+    @classmethod
+    def get_available_themes(cls) -> List[str]:
+        """
+        Get list of all available PlantUML themes.
+        
+        Returns:
+            List[str]: List of theme names that can be used with the 'theme' style option
+        """
+        return cls.AVAILABLE_THEMES.copy()
+    
+    @classmethod
+    def get_theme_info(cls, theme_name: str) -> Dict[str, str]:
+        """
+        Get information about a specific theme.
+        
+        Args:
+            theme_name: Name of the theme to get info about
+            
+        Returns:
+            Dict with theme information including name, description, and category
+        """
+        theme_descriptions = {
+            'amiga': {'description': 'White on blue theme based on Amiga Workbench 1.x', 'category': 'retro'},
+            'aws-orange': {'description': 'Amazon Web Services colors', 'category': 'professional'},
+            'black-knight': {'description': 'Dark theme representing the black knight', 'category': 'dark'},
+            'bluegray': {'description': 'Blue-gray theme', 'category': 'minimalist'},
+            'blueprint': {'description': 'White on blue based on blueprint reproduction process', 'category': 'retro'},
+            'carbon-gray': {'description': 'Gray palette from Carbon Design System', 'category': 'professional'},
+            'cerulean': {'description': 'Bootstrap cerulean theme', 'category': 'bootstrap'},
+            'cloudscape-design': {'description': 'Cloudscape design colors', 'category': 'professional'},
+            'crt-amber': {'description': 'Orange on black theme based on monochrome CRT monitors', 'category': 'retro'},
+            'cyborg': {'description': 'Bootstrap cyborg theme', 'category': 'bootstrap'},
+            'hacker': {'description': 'Jekyll hacker theme (green on dark)', 'category': 'dark'},
+            'lightgray': {'description': 'Light gray theme', 'category': 'minimalist'},
+            'mars': {'description': 'Mars theme from future-architect/puml-themes', 'category': 'colorful'},
+            'materia': {'description': 'Bootstrap materia theme', 'category': 'bootstrap'},
+            'metal': {'description': 'Silver/metallic theme', 'category': 'minimalist'},
+            'mimeograph': {'description': 'Purple on gray based on mimeograph reproduction', 'category': 'retro'},
+            'minty': {'description': 'Bootstrap minty theme', 'category': 'bootstrap'},
+            'mono': {'description': 'Monochrome theme with monospaced font', 'category': 'minimalist'},
+            '_none_': {'description': 'Empty theme (no styling)', 'category': 'minimalist'},
+            'plain': {'description': 'Simple black on white with blue hyperlinks', 'category': 'minimalist'},
+            'reddress-darkblue': {'description': 'Dark blue variant from Red Dress themes', 'category': 'dark'},
+            'reddress-lightblue': {'description': 'Light blue variant from Red Dress themes', 'category': 'professional'},
+            'sandstone': {'description': 'Bootstrap sandstone theme', 'category': 'bootstrap'},
+            'silver': {'description': 'Silver/gray theme', 'category': 'minimalist'},
+            'sketchy': {'description': 'Bootstrap sketchy theme (hand-drawn style)', 'category': 'bootstrap'},
+            'spacelab': {'description': 'Bootstrap spacelab theme', 'category': 'bootstrap'},
+            'sunlust': {'description': 'Solarized-inspired theme', 'category': 'colorful'},
+            'superhero': {'description': 'Bootstrap superhero theme (dark with bright accents)', 'category': 'dark'},
+            'toy': {'description': 'Toy theme from future-architect/puml-themes', 'category': 'colorful'},
+            'united': {'description': 'Bootstrap united theme', 'category': 'bootstrap'},
+            'vibrant': {'description': 'Vibrant colors theme', 'category': 'colorful'}
+        }
+        
+        if theme_name not in cls.AVAILABLE_THEMES:
+            return {
+                'name': theme_name,
+                'description': 'Unknown theme',
+                'category': 'unknown',
+                'available': False
+            }
+        
+        info = theme_descriptions.get(theme_name, {'description': 'No description available', 'category': 'other'})
+        return {
+            'name': theme_name,
+            'description': info['description'],
+            'category': info['category'],
+            'available': True
+        }
     
     def __init__(self, schema: dict, style: dict = None):
         self.schema = schema

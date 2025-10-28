@@ -179,9 +179,47 @@ You can customize PlantUML generation with these style options (defaults in `Pum
 - `relationship_style` (string) — relationship arrow style: `--`, `-->`, `<-->`, etc.
 - `show_primitive_types` (bool) — whether to include relationships to primitive types
 - `group_by_package` (bool) — whether to group related types in packages
-- `theme` (string) — PlantUML theme name (e.g., `blueprint`, `aws-orange`, `cerulean`)
+- `theme` (string) — PlantUML theme name (default: `aws-orange`)
 - `title` (string) — diagram title (uses schema meta title if not specified)
 - `note_position` (string) — position for root type notes: `left`, `right`, `top`, `bottom`
+
+### Available Themes
+
+The PlantUML generator includes 31 built-in themes. You can get the complete list and theme information programmatically:
+
+```py
+# Get all available themes
+themes = PumlGenerator.get_available_themes()
+print(f"Available themes: {themes}")
+
+# Get information about a specific theme
+info = PumlGenerator.get_theme_info('aws-orange')
+print(f"Theme: {info['name']} ({info['category']})")
+print(f"Description: {info['description']}")
+```
+
+**Theme Categories:**
+- **Professional**: `aws-orange` (default), `carbon-gray`, `cloudscape-design`, `reddress-lightblue`
+- **Bootstrap**: `cerulean`, `cyborg`, `materia`, `minty`, `sandstone`, `sketchy`, `spacelab`, `united`
+- **Dark**: `black-knight`, `hacker`, `reddress-darkblue`, `superhero`
+- **Colorful**: `mars`, `sunlust`, `toy`, `vibrant`
+- **Minimalist**: `bluegray`, `lightgray`, `metal`, `mono`, `plain`, `silver`
+- **Retro**: `amiga`, `blueprint`, `crt-amber`, `mimeograph`
+
+**Theme Examples:**
+```py
+# Professional AWS theme (default)
+generator = PumlGenerator(schema, {'theme': 'aws-orange'})
+
+# Dark theme for presentations
+generator = PumlGenerator(schema, {'theme': 'superhero'})
+
+# Classic blueprint style
+generator = PumlGenerator(schema, {'theme': 'blueprint'})
+
+# Vibrant colors
+generator = PumlGenerator(schema, {'theme': 'vibrant'})
+```
 
 ### Example Configurations
 
