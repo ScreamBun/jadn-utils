@@ -272,16 +272,18 @@ def test_concise_serialize_formats():
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
     nested_json_binary = {
-        "lower_x": "ABCD",
-        "upper_x": "ABCD",
-        "base64": "Test"
+        "lower_x": "41424344",
+        "upper_x": "41424344",
+        "base64": "QUJDRA=="
     }
 
     expected_json_binary = [
         b'ABCD',
         b'ABCD',
-        b'Test'
+        b'ABCD'
     ]
+
+    assert serialize_as_concise(jadn_types, nested_json_binary) == expected_json_binary
 
 def test_concise_serialize_ipv4addr():
     jadn_schema = {

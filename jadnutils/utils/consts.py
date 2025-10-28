@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 import isodate
 from dateutil import parser
+import base64
 
 PRIMITIVE_TYPES = ("Binary", "Boolean", "Integer", "Number", "String")
 SELECTOR_TYPES = ("Enumerated", "Choice")
@@ -389,6 +390,6 @@ CONCISE_IGNORE_FORMATS = {
     "/ipv6-addr": lambda x: bytes(x, 'utf-8'),
     "/x": lambda x: bytes.fromhex(x),
     "/X": lambda x: bytes.fromhex(x),
-    "/base64Binary": lambda x: bytes(x, 'utf-8'),
-    "/b64": lambda x: bytes(x, 'utf-8'),
+    "/base64Binary": lambda v: base64.b64decode(v),
+    "/b64": lambda v: base64.b64decode(v),
 }
