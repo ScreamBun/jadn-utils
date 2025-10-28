@@ -48,7 +48,7 @@ def test_concise_serialize_gyearmonth():
     nested_json = [{
         "name": "Bob",
         "id": "K193-3498-234",
-        "dob": "-1999-07",
+        "dob": "-1990-07",
         "weight": 79546
         }, {
         "name": "Alice",
@@ -57,7 +57,7 @@ def test_concise_serialize_gyearmonth():
     }]
     
     expected_json = [
-        ["Bob", "K193-3498-234", 930801600, 79546],
+        ["Bob", "K193-3498-234", 646804800, 79546],
         ["Alice", "B239-5921-348", 391752000]
     ]
 
@@ -326,6 +326,90 @@ def test_concise_serialize_choice():
     expected_json = [
         "Gadget",
         {2: 42}
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_map():
+    jadn_schema = {
+        "types": [
+            ["MapType", "Map", [], "", [
+                [1, "key1", "String", [], ""],
+                [2, "key2", "Integer", [], ""]
+            ]],
+            ["Item", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "mapField", "MapType", [], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    
+    nested_json = {
+        "name": "Container",
+        "mapField": {
+            "key1": "value1",
+            "key2": 100
+        }
+    }
+    
+    expected_json = [
+        "Container",
+        {
+            1: "value1",
+            2: 100
+        }
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_complex():
+    jadn_schema = {
+    "meta": {
+        "package": "https://www.test",
+        "roots": ["Parent-Record"]
+    },
+    "types": [
+        ["Parent-Record", "Record", [], "", [
+            [1, "choice", "Choice", [], ""],
+            [2, "map", "Map", [], ""],
+            [3, "enumerated", "Enumerated", [], ""]
+        ]],
+        ["Choice", "Choice", [], "", [
+            [1, "option_a", "String", [], ""],
+            [2, "option_b", "String", [], ""]
+        ]],
+        ["Map", "Map", [], "", [
+            [1, "field_1", "String", [], ""],
+            [2, "field_2", "String", [], ""]
+        ]],
+        ["Enumerated", "Enumerated", [], "", [
+            [1, "selection_1", ""],
+            [2, "selection_2", ""],
+            [3, "selection_3", ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+        "choice": {
+        "option_a": "a"
+        },
+        "map": {
+        "field_1": "1",
+        "field_2": "2"
+        },
+        "enumerated": "selection_2"
+    }
+
+    expected_json = [
+        {1: "a"},
+        {
+            1: "1",
+            2: "2"
+        },
+        2
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
