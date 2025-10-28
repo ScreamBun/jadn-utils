@@ -121,7 +121,7 @@ def serialize_as_compact(jadn_types, json_obj):
 	else: # value base case
 		return json_obj
 
-def serialize_as_concise(jadn_types, json_obj, keep_parsing = False):
+def serialize_as_concise(jadn_types, json_obj):
 	"""
 	Serialize JSON object to concise representation.
 	Special serializations: enumeration returns id only, choice returns field ID, map returns field ID, record returns values.
@@ -139,7 +139,7 @@ def serialize_as_concise(jadn_types, json_obj, keep_parsing = False):
 			return [serialize_as_concise(jadn_types, value) for value in json_obj.values()]
 		elif type == "Enumerated":
 			hasID = "=" in type_options
-			enum_field = get_field_from_struct(field, list(json_obj.values())[0], id = hasID, keep_parsing = True)
+			enum_field = get_field_from_struct(field, list(json_obj.values())[0], id = hasID)
 			return enum_field[0] if enum_field else None
 		elif type == "Choice":
 			hasID = "=" in type_options
@@ -161,10 +161,9 @@ def serialize_as_concise(jadn_types, json_obj, keep_parsing = False):
 	elif isinstance(json_obj, list):
 		return [serialize_as_concise(jadn_types, item) for item in json_obj]
 	else:
-		if keep_parsing:
-			field = get_field_by_data(jadn_types, json_obj)
-			if field:
-				return serialize_as_concise(jadn_types, {field[0]: json_obj})
+		field = get_field_by_data(jadn_types, json_obj)
+		if field and get_type(field) == "Enumerated":
+			return serialize_as_concise(jadn_types, {field[0]: json_obj})
 		return json_obj
 
 def convert_format_value(format_dict, json_obj):

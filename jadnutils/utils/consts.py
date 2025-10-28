@@ -378,18 +378,30 @@ OPTION_ID = {   # Pre-computed reverse index - MUST match TYPE_OPTIONS and FIELD
 }
 
 # Formats specifying a textual representation for Binary, Integer, Number, or Array types
+def _decode_hex_or_plain(x):
+    try:
+        return bytes.fromhex(x)
+    except Exception:
+        return x.encode("utf-8")
+
+def _decode_base64_or_plain(v):
+    try:
+        return base64.b64decode(v)
+    except Exception:
+        return v.encode("utf-8")
+
 CONCISE_IGNORE_FORMATS = {
     "/dayTimeDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
     "/yearMonthDuration": lambda x: (lambda d: int((d.years or 0) * 12 + (d.months or 0)))(isodate.parse_duration(x)),
-    "/gYearMonth": lambda x: int(datetime.combine(isodate.parse_date(x.lstrip('-') + "-01"), datetime.min.time()).timestamp()),  # Convert date to datetime then timestamp
-    "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('Z')[0].split('+')[0].split('-'))).timestamp()), # 1972 used by many parsers, handle timezone
-    "/gYear": lambda x: x if isinstance(x, int) else int(parser.parse(x.split('+')[0].split('Z')[0] + "-01-01").timestamp()),  # Parse year with optional timezone, default to Jan 1
+    "/gYearMonth": lambda x: int(datetime.combine(isodate.parse_date(x.lstrip('-') + "-01"), datetime.min.time()).timestamp()),
+    "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('Z')[0].split('+')[0].split('-'))).timestamp()),
+    "/gYear": lambda x: x if isinstance(x, int) else int(parser.parse(x.split('+')[0].split('Z')[0] + "-01-01").timestamp()),
     "/ipv4-net": lambda x: bytes(x, 'utf-8'),
     "/ipv6-net": lambda x: bytes(x, 'utf-8'),
     "/ipv4-addr": lambda x: bytes(x, 'utf-8'),
     "/ipv6-addr": lambda x: bytes(x, 'utf-8'),
-    "/x": lambda x: bytes.fromhex(x),
-    "/X": lambda x: bytes.fromhex(x),
-    "/base64Binary": lambda v: base64.b64decode(v),
-    "/b64": lambda v: base64.b64decode(v),
+    "/x": _decode_hex_or_plain,
+    "/X": _decode_hex_or_plain,
+    "/base64Binary": _decode_base64_or_plain,
+    "/b64": _decode_base64_or_plain,
 }

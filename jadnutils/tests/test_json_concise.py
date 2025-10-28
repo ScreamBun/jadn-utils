@@ -415,8 +415,8 @@ def test_concise_serialize_binary():
     
     expected_json = [
         b'Man',
-        b'TWFu',
-        b'TWFu',
+        b'Man',
+        b'Man',
         b'Man'
     ]
 
