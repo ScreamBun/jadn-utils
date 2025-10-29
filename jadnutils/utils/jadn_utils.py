@@ -82,6 +82,48 @@ def get_field_by_name(jadn_types, name):
             return type_def
     return None
 
+def get_inherited_fields(jadn_types, field):
+    """
+    Retrieve all inherited fields for a given field definition
+    """
+    parent = [opt for opt in get_options(field) if opt.startswith('e') or opt.startswith('r')]
+    inherited_fields = []
+
+    if parent and isinstance(parent, list):
+        clean_parent = parent[0][1:]
+        opt = parent[0][0]
+
+        parent_field = get_field_by_name(jadn_types, clean_parent)
+        if parent_field:
+            children = get_children(parent_field)
+
+            if opt == 'e':  # extends
+                for child in children:
+                    idx = child[0]
+                    if idx in [f[0] for f in inherited_fields]:
+                        # overwrite fields
+                        inherited_fields = [f if f[0] != idx else child for f in inherited_fields]
+                    else:
+                        inherited_fields.append(child)
+            elif opt == 'r':  # restricts
+                for child in children:
+                    idx = child[0]
+                    if idx in [f[0] for f in inherited_fields]:
+                        # overwrite fields
+                        inherited_fields = [f if f[0] != idx else child for f in inherited_fields]
+                    else:
+                        inherited_fields.append(child)
+
+            grandparent = [opt for opt in get_options(parent_field) if opt.startswith('e') or opt.startswith('r')]
+
+            if grandparent and isinstance(grandparent, list) and len(grandparent) > 0:
+                inherited_fields.extend(get_inherited_fields(jadn_types, parent_field))
+   
+    dedup = {}
+    for f in inherited_fields:
+        dedup[f[0]] = f
+    return list(dedup.values())
+
 def get_field_by_data(jadn_types, data):
     """
     Retrive a field definition by its data from jadn_types
@@ -100,7 +142,10 @@ def get_field_by_data(jadn_types, data):
 
     for jadn_type in jadn_types:
         found = True
-        children = get_children(jadn_type)
+        children = list(get_children(jadn_type) or [])
+        handleInheritance = len([opt for opt in get_options(jadn_type) if opt.startswith('e') or opt.startswith('r')]) > 0
+        if handleInheritance: 
+            children.extend(get_inherited_fields(jadn_types, jadn_type))
         if children and isinstance(children, list) and len(children) > 0 and not isinstance(children[0], list):
             children = [children]
         if not children:

@@ -681,3 +681,118 @@ def test_issue_field_disappearing():
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_inheritance_extend():
+    jadn_schema = {"types": [
+        ["Abstract-Record", "Record", ["a"], "This is an abstract record.", [
+            [1, "value_1", "String", ["[0"], ""],
+            [2, "value_2", "Integer", ["[0"], ""],
+            [3, "value_3", "String", ["[0"], ""]
+        ]],
+        ["Restrict-Record", "Record", ["rAbstract-Record"], "", []],
+        ["Extend-Record", "Record", ["eAbstract-Record"], "", [
+            [4, "value_4", "String", [], ""],
+            [5, "value_5", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+    "Extend-Record": {
+        "value_1": "1",
+        "value_2": 2,
+        "value_3": "3",
+        "value_4": "4",
+        "value_5": "5"
+    }
+    }
+
+    expected_json = {"Extend-Record": ["1", 2, "3", "4", "5"]}
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_concise_serialize_inheritance_restrict():
+    jadn_schema = {"types": [
+        ["Abstract-Record", "Record", ["a"], "This is an abstract record.", [
+            [1, "value_1", "String", ["[0"], ""],
+            [2, "value_2", "Integer", ["[0"], ""],
+            [3, "value_3", "String", ["[0"], ""]
+        ]],
+        ["Restrict-Record", "Record", ["rAbstract-Record"], "", []],
+        ["Extend-Record", "Record", ["eAbstract-Record"], "", [
+            [4, "value_4", "String", [], ""],
+            [5, "value_5", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+    "Restrict-Record": {
+        "value_1": "1",
+        "value_2": 2,
+        "value_3": "3"
+    }
+    }
+
+    expected_json = {"Restrict-Record": ["1", 2, "3"]}
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+    
+def test_concise_serialize_inheritance_recursive():
+    jadn_schema = {
+        "types": [
+        ["Abstract-Object", "Record", ["a"], "This is an abstract record.", [
+            [1, "abstract_1", "String", ["[0"], ""],
+            [2, "abstract_2", "String", ["[0"], ""],
+            [3, "abstract_3", "String", ["[0"], ""],
+            [4, "abstract_4", "String", ["[0"], ""]
+        ]],
+        ["Extend-1", "Record", ["eAbstract-Object"], "Should contain abstract_1 through abstract_4 and extend_1", [
+            [5, "extend_1", "String", ["[0"], ""]
+        ]],
+        ["Restrict-1", "Record", ["rAbstract-Object"], "Should contain abstract_1 through abstract_4", []],
+        ["Extend-2", "Record", ["eExtend-1"], "Should contain abstract_1 through abstract_4 and extend_1, extend_2", [
+            [6, "extend_2", "String", ["[0"], ""]
+        ]],
+        ["Extend-3", "Record", ["eRestrict-1"], "Should contain abstract_1 through abstract_4 and extend_4, extend_5", [
+            [7, "extend_4", "String", [], ""],
+            [8, "extend_5", "String", [], ""]
+        ]],
+        ["Restrict-2", "Record", ["rExtend-3"], "Should contain abstract_1 through abstract_4 and extend_4, extend_5", []],
+        ["Extend-4", "Record", ["eRestrict-2"], "Should contain abstract_1 through abstract_4 and extend_4 through extend_7", [
+            [9, "extend_6", "String", ["[0"], ""],
+            [10, "extend_7", "String", ["[0"], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+    "Extend-2": {
+        "abstract_1": "1",
+        "abstract_2": "2",
+        "abstract_3": "3",
+        "abstract_4": "4",
+        "extend_1": "5",
+        "extend_2": "6"
+    }
+    }
+
+    expected_json = {"Extend-2": ["1", "2", "3", "4", "5", "6"]}
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+    nested_json = {
+    "Restrict-2": {
+        "abstract_1": "1",
+        "abstract_2": "2",
+        "abstract_3": "3",
+        "abstract_4": "4",
+        "extend_4": "5",
+        "extend_5": "6"
+    }
+    }
+
+    expected_json = {"Restrict-2": ["1", "2", "3", "4", "5", "6"]}
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
