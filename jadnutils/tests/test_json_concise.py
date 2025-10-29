@@ -272,15 +272,15 @@ def test_concise_serialize_formats():
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
 
     nested_json_binary = {
-        "lower_x": "41424344",
-        "upper_x": "41424344",
-        "base64": "QUJDRA=="
+        "lower_x": "ABCD",
+        "upper_x": "ABCD",
+        "base64": "ABCD"
     }
 
     expected_json_binary = [
-        b'ABCD',
-        b'ABCD',
-        b'ABCD'
+        '41424344',
+        '41424344',
+        '001083'
     ]
 
     assert serialize_as_concise(jadn_types, nested_json_binary) == expected_json_binary
@@ -314,8 +314,8 @@ def test_concise_serialize_ipv4addr():
     }]
     
     expected_json = [
-        ["Bob", "K193-3498-234", b'192.168.1.100', 79546],
-        ["Alice", "B239-5921-348", b'10.0.0.1']
+        ["Bob", "K193-3498-234", '3139322e3136382e312e313030', 79546],
+        ["Alice", "B239-5921-348", '31302e302e302e31']
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -349,8 +349,8 @@ def test_concise_serialize_ipv6addr():
     }]
     
     expected_json = [
-        ["Bob", "K193-3498-234", b'2001:0db8:85a3:0000:0000:8a2e:0370:7334', 79546],
-        ["Alice", "B239-5921-348", b'fe80::1']
+        ["Bob", "K193-3498-234", '323030313a306462383a383561333a303030303a303030303a386132653a303337303a37333334', 79546],
+        ["Alice", "B239-5921-348", '666538303a3a31']
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -384,8 +384,8 @@ def test_concise_serialize_ipv4net():
     }]
     
     expected_json = [
-        ["Bob", "K193-3498-234", b'192.168.1.0/24', 79546],
-        ["Alice", "B239-5921-348", b'10.0.0.0/8']
+        ["Bob", "K193-3498-234", '3139322e3136382e312e302f3234', 79546],
+        ["Alice", "B239-5921-348", '31302e302e302e302f38']
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -414,10 +414,10 @@ def test_concise_serialize_binary():
     }
     
     expected_json = [
-        b'Man',
-        b'Man',
-        b'Man',
-        b'Man'
+        '346436313665',
+        '4d616e',
+        '4d616e',
+        '344436313645'
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
