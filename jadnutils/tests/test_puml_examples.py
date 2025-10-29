@@ -8,7 +8,7 @@ import os
 from jadnutils.puml.puml_generator import PumlGenerator
 
 
-def create_example_schema():
+def test_create_example_schema():
     """Create an example JADN schema for demonstration."""
     return {
         "meta": {
@@ -123,9 +123,9 @@ def create_example_schema():
     }
 
 
-def generate_conceptual_diagram():
+def test_generate_conceptual_diagram():
     """Generate a conceptual level PlantUML diagram."""
-    schema = create_example_schema()
+    schema = test_create_example_schema()
     
     style = {
         'detail': PumlGenerator.CONCEPTUAL,
@@ -145,9 +145,9 @@ def generate_conceptual_diagram():
     return puml_source
 
 
-def generate_logical_diagram():
+def test_generate_logical_diagram():
     """Generate a logical level PlantUML diagram."""
-    schema = create_example_schema()
+    schema = test_create_example_schema()
     
     style = {
         'detail': PumlGenerator.LOGICAL,
@@ -168,9 +168,9 @@ def generate_logical_diagram():
     return puml_source
 
 
-def generate_detailed_diagram():
+def test_generate_detailed_diagram():
     """Generate a detailed informational PlantUML diagram."""
-    schema = create_example_schema()
+    schema = test_create_example_schema()
     
     style = {
         'detail': PumlGenerator.INFORMATIONAL,
@@ -191,9 +191,9 @@ def generate_detailed_diagram():
     return puml_source
 
 
-def generate_no_links_diagram():
+def test_generate_no_links_diagram():
     """Generate a diagram without relationships."""
-    schema = create_example_schema()
+    schema = test_create_example_schema()
     
     style = {
         'detail': PumlGenerator.LOGICAL,
@@ -213,16 +213,16 @@ def generate_no_links_diagram():
     return puml_source
 
 
-def save_all_examples():
+def test_save_all_examples():
     """Save all examples to files."""
     import os
     
     # Create output directory if it doesn't exist
-    output_dir = "output"
+    output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'output')
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    schema = create_example_schema()
+    schema = test_create_example_schema()
     
     examples = [
         ("conceptual", PumlGenerator.CONCEPTUAL, {'theme': 'blueprint'}),
@@ -244,19 +244,19 @@ def save_all_examples():
         print(f"Saved {filename}")
 
 
-def demonstrate_png_output():
+def test_demonstrate_png_output():
     """
-    Demonstrate PNG and other image format output capabilities.
+    Demonstrate PlantUML source code generation capabilities.
     """
     print("\n" + "=" * 50)
-    print("PNG and Image Format Output Examples")
+    print("PlantUML Source Code Generation Examples")
     print("=" * 50)
     
     # Create a simple schema for demonstration
     simple_schema = {
         "info": {
             "package": "http://example.com/demo",
-            "title": "PNG Demo Schema",
+            "title": "Demo Schema",
             "version": "1.0"
         },
         "types": [
@@ -279,75 +279,71 @@ def demonstrate_png_output():
     }
     
     generator = PumlGenerator(simple_schema)
-    output_dir = os.path.join(os.path.dirname(__file__), '..', 'output')
+    output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'output')
     os.makedirs(output_dir, exist_ok=True)
     
-    # 1. Generate URL for online viewing
-    print("\n1. Online PlantUML URL Generation")
-    print("-" * 35)
-    try:
-        url = generator.generate_url(output_format='png')
-        print(f"PlantUML PNG URL: {url}")
-        print("   Copy this URL to your browser to view the diagram")
-    except Exception as e:
-        print(f"URL generation failed: {e}")
-    
-    # 2. Generate PNG locally or via web service
-    print("\n2. PNG Generation")
-    print("-" * 17)
-    try:
-        png_data = generator.generate(output_format='png')
-        png_file = os.path.join(output_dir, 'png_demo.png')
-        with open(png_file, 'wb') as f:
-            f.write(png_data)
-        print(f"✓ PNG saved: {png_file} ({len(png_data):,} bytes)")
-        print("  Note: Uses web service if PlantUML not locally installed")
-    except Exception as e:
-        print(f"✗ PNG generation failed: {e}")
-    
-    # 3. Generate SVG
-    print("\n3. SVG Generation")
-    print("-" * 17)
-    try:
-        svg_data = generator.generate(output_format='svg')
-        svg_file = os.path.join(output_dir, 'png_demo.svg')
-        with open(svg_file, 'wb') as f:
-            f.write(svg_data)
-        print(f"✓ SVG saved: {svg_file} ({len(svg_data):,} bytes)")
-    except Exception as e:
-        print(f"✗ SVG generation failed: {e}")
-    
-    # 4. Auto-detection from file extension
-    print("\n4. Format Auto-Detection")
-    print("-" * 25)
-    try:
-        # Save as PNG using auto-detection
-        auto_png = os.path.join(output_dir, 'auto_detected.png')
-        generator.save(auto_png)
-        print(f"✓ Auto-detected PNG: {auto_png}")
-        
-        # Save as PlantUML source
-        auto_puml = os.path.join(output_dir, 'auto_detected.puml')
-        generator.save(auto_puml)
-        print(f"✓ Auto-detected PUML: {auto_puml}")
-        
-    except Exception as e:
-        print(f"✗ Auto-detection failed: {e}")
-    
-    # 5. Multiple formats comparison
-    print("\n5. Multiple Format Comparison")
+    # 1. Generate PlantUML source
+    print("\n1. PlantUML Source Generation")
     print("-" * 30)
-    formats = ['png', 'svg', 'txt']
-    for fmt in formats:
+    try:
+        puml_source = generator.generate()
+        print(f"✓ Generated {len(puml_source)} characters of PlantUML source")
+        print("First few lines:")
+        lines = puml_source.split('\n')
+        for i, line in enumerate(lines[:5]):
+            print(f"  {line}")
+        print("  ...")
+    except Exception as e:
+        print(f"✗ Source generation failed: {e}")
+    
+    # 2. Save PlantUML source to file
+    print("\n2. Save to File")
+    print("-" * 15)
+    try:
+        puml_file = os.path.join(output_dir, 'demo.puml')
+        generator.save(puml_file)
+        print(f"✓ PlantUML source saved: {puml_file}")
+    except Exception as e:
+        print(f"✗ File save failed: {e}")
+    
+    # 3. Test different detail levels
+    print("\n3. Different Detail Levels")
+    print("-" * 26)
+    detail_levels = [
+        (PumlGenerator.CONCEPTUAL, "Conceptual"),
+        (PumlGenerator.LOGICAL, "Logical"), 
+        (PumlGenerator.INFORMATIONAL, "Informational")
+    ]
+    
+    for detail, name in detail_levels:
         try:
-            data = generator.generate(output_format=fmt)
-            size = len(data)
-            print(f"✓ {fmt.upper()}: {size:,} bytes")
+            style = {'detail': detail, 'theme': None}
+            gen = PumlGenerator(simple_schema, style)
+            source = gen.generate()
+            line_count = len(source.split('\n'))
+            print(f"✓ {name}: {line_count} lines")
         except Exception as e:
-            print(f"✗ {fmt.upper()}: {e}")
+            print(f"✗ {name}: {e}")
+    
+    # 4. Test with themes
+    print("\n4. Theme Examples")
+    print("-" * 15)
+    themes = ['aws-orange', 'blueprint', 'cerulean', None]
+    for theme in themes:
+        try:
+            style = {'theme': theme}
+            gen = PumlGenerator(simple_schema, style)
+            source = gen.generate()
+            theme_name = theme or "No theme"
+            print(f"✓ {theme_name}: Generated successfully")
+        except Exception as e:
+            theme_name = theme or "No theme"
+            print(f"✗ {theme_name}: {e}")
     
     print(f"\nFiles saved to: {output_dir}")
-    print("Tip: PNG/SVG formats work best for documentation and presentations")
+    print("Tip: Use PlantUML tools to render the .puml files to images")
+    print("Example: plantuml demo.puml")
+    print("Or view online at: http://www.plantuml.com/plantuml/uml/")
 
 
 if __name__ == "__main__":
@@ -355,16 +351,16 @@ if __name__ == "__main__":
     print("=" * 40)
     
     # Generate and display different diagram styles
-    generate_conceptual_diagram()
-    generate_logical_diagram()
-    generate_detailed_diagram()
-    generate_no_links_diagram()
+    test_generate_conceptual_diagram()
+    test_generate_logical_diagram()
+    test_generate_detailed_diagram()
+    test_generate_no_links_diagram()
     
     # Save examples to files
-    save_all_examples()
+    test_save_all_examples()
     
-    # Demonstrate new PNG output functionality
-    demonstrate_png_output()
+    # Demonstrate PlantUML source generation functionality
+    test_demonstrate_png_output()
     
     print("\nExamples completed!")
     print("\nTo view the PlantUML diagrams:")
@@ -372,4 +368,4 @@ if __name__ == "__main__":
     print("2. Use online viewer: http://www.plantuml.com/plantuml/uml/")
     print("3. Use VS Code PlantUML extension")
     print("4. Generate images: java -jar plantuml.jar output/*.puml")
-    print("5. Or use the new PNG generation: generator.generate(output_format='png')")
+    print("5. Copy .puml content to PlantUML online editor")

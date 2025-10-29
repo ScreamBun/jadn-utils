@@ -1,12 +1,5 @@
 import pandas as pd
-import subprocess
-import tempfile
-import os
-import base64
-import zlib
-import urllib.request
-import urllib.parse
-from typing import Dict, List, Optional, Union, Tuple
+from typing import List
 
 
 class PumlGenerator:
@@ -29,7 +22,7 @@ class PumlGenerator:
         'reddress-lightblue', 'sandstone', 'silver', 'sketchy', 'spacelab',
         'sunlust', 'superhero', 'toy', 'united', 'vibrant'
     ]
-
+    
     # PlantUML styling options
     STYLE_DEFAULT = {
         'detail': CONCEPTUAL,
@@ -57,67 +50,6 @@ class PumlGenerator:
             List[str]: List of theme names that can be used with the 'theme' style option
         """
         return cls.AVAILABLE_THEMES.copy()
-    
-    @classmethod
-    def get_theme_info(cls, theme_name: str) -> Dict[str, str]:
-        """
-        Get information about a specific theme.
-        
-        Args:
-            theme_name: Name of the theme to get info about
-            
-        Returns:
-            Dict with theme information including name, description, and category
-        """
-        theme_descriptions = {
-            'amiga': {'description': 'White on blue theme based on Amiga Workbench 1.x', 'category': 'retro'},
-            'aws-orange': {'description': 'Amazon Web Services colors', 'category': 'professional'},
-            'black-knight': {'description': 'Dark theme representing the black knight', 'category': 'dark'},
-            'bluegray': {'description': 'Blue-gray theme', 'category': 'minimalist'},
-            'blueprint': {'description': 'White on blue based on blueprint reproduction process', 'category': 'retro'},
-            'carbon-gray': {'description': 'Gray palette from Carbon Design System', 'category': 'professional'},
-            'cerulean': {'description': 'Bootstrap cerulean theme', 'category': 'bootstrap'},
-            'cloudscape-design': {'description': 'Cloudscape design colors', 'category': 'professional'},
-            'crt-amber': {'description': 'Orange on black theme based on monochrome CRT monitors', 'category': 'retro'},
-            'cyborg': {'description': 'Bootstrap cyborg theme', 'category': 'bootstrap'},
-            'hacker': {'description': 'Jekyll hacker theme (green on dark)', 'category': 'dark'},
-            'lightgray': {'description': 'Light gray theme', 'category': 'minimalist'},
-            'mars': {'description': 'Mars theme from future-architect/puml-themes', 'category': 'colorful'},
-            'materia': {'description': 'Bootstrap materia theme', 'category': 'bootstrap'},
-            'metal': {'description': 'Silver/metallic theme', 'category': 'minimalist'},
-            'mimeograph': {'description': 'Purple on gray based on mimeograph reproduction', 'category': 'retro'},
-            'minty': {'description': 'Bootstrap minty theme', 'category': 'bootstrap'},
-            'mono': {'description': 'Monochrome theme with monospaced font', 'category': 'minimalist'},
-            '_none_': {'description': 'Empty theme (no styling)', 'category': 'minimalist'},
-            'plain': {'description': 'Simple black on white with blue hyperlinks', 'category': 'minimalist'},
-            'reddress-darkblue': {'description': 'Dark blue variant from Red Dress themes', 'category': 'dark'},
-            'reddress-lightblue': {'description': 'Light blue variant from Red Dress themes', 'category': 'professional'},
-            'sandstone': {'description': 'Bootstrap sandstone theme', 'category': 'bootstrap'},
-            'silver': {'description': 'Silver/gray theme', 'category': 'minimalist'},
-            'sketchy': {'description': 'Bootstrap sketchy theme (hand-drawn style)', 'category': 'bootstrap'},
-            'spacelab': {'description': 'Bootstrap spacelab theme', 'category': 'bootstrap'},
-            'sunlust': {'description': 'Solarized-inspired theme', 'category': 'colorful'},
-            'superhero': {'description': 'Bootstrap superhero theme (dark with bright accents)', 'category': 'dark'},
-            'toy': {'description': 'Toy theme from future-architect/puml-themes', 'category': 'colorful'},
-            'united': {'description': 'Bootstrap united theme', 'category': 'bootstrap'},
-            'vibrant': {'description': 'Vibrant colors theme', 'category': 'colorful'}
-        }
-        
-        if theme_name not in cls.AVAILABLE_THEMES:
-            return {
-                'name': theme_name,
-                'description': 'Unknown theme',
-                'category': 'unknown',
-                'available': False
-            }
-        
-        info = theme_descriptions.get(theme_name, {'description': 'No description available', 'category': 'other'})
-        return {
-            'name': theme_name,
-            'description': info['description'],
-            'category': info['category'],
-            'available': True
-        }
     
     def __init__(self, schema: dict, style: dict = None):
         self.schema = schema
@@ -323,23 +255,14 @@ class PumlGenerator:
         
         return relationships
 
-    def generate(self, output_format: str = 'raw') -> Union[str, bytes]:
+    def generate(self) -> str:
         """
-        Generate PlantUML output in the specified format.
-        
-        Args:
-            output_format: Output format - 'raw', 'png', 'svg', 'pdf', 'eps', 'txt'
+        Generate PlantUML source code from the JADN schema.
         
         Returns:
-            str for 'raw' format, bytes for image formats
+            str: PlantUML source code
         """
-        # Generate PlantUML source code
-        puml_source = self._generate_source()
-        
-        if output_format.lower() == 'raw':
-            return puml_source
-        else:
-            return self._render_to_format(puml_source, output_format)
+        return self._generate_source()
     
     def _generate_source(self) -> str:
         """Generate PlantUML source code from the JADN schema."""
@@ -393,193 +316,13 @@ class PumlGenerator:
         
         return "\n".join(lines)
 
-    def _render_to_format(self, puml_source: str, output_format: str) -> bytes:
+    def save(self, filename: str) -> None:
         """
-        Render PlantUML source to specified format.
+        Save the generated PlantUML source to a file.
         
         Args:
-            puml_source: PlantUML source code
-            output_format: Target format (png, svg, pdf, eps, txt)
-        
-        Returns:
-            bytes: Rendered output
+            filename: Output filename (should end in .puml or .plantuml)
         """
-        format_map = {
-            'png': '-tpng',
-            'svg': '-tsvg', 
-            'pdf': '-tpdf',
-            'eps': '-teps',
-            'txt': '-ttxt'
-        }
-        
-        if output_format.lower() not in format_map:
-            raise ValueError(f"Unsupported format: {output_format}")
-        
-        # Try local PlantUML first
-        try:
-            plantuml_cmd = self._find_plantuml_command()
-            format_flag = format_map[output_format.lower()]
-            
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.puml', delete=False) as f:
-                f.write(puml_source)
-                temp_puml = f.name
-            
-            try:
-                # Run PlantUML using pipe mode for better compatibility
-                cmd = [plantuml_cmd, format_flag, '-pipe']
-                result = subprocess.run(
-                    cmd, 
-                    input=puml_source.encode('utf-8'),
-                    capture_output=True,
-                    check=True
-                )
-                return result.stdout
-            finally:
-                os.unlink(temp_puml)
-                
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            # Fallback to web service for supported formats
-            web_formats = {'png', 'svg', 'txt'}
-            if output_format.lower() in web_formats:
-                return self._render_via_web_service(puml_source, output_format)
-            else:
-                raise RuntimeError(
-                    f"Local PlantUML required for {output_format} format. "
-                    f"Web service only supports: {', '.join(web_formats)}"
-                )
-    
-    def _find_plantuml_command(self) -> str:
-        """
-        Find available PlantUML command.
-        
-        Returns:
-            str: PlantUML command to use
-        
-        Raises:
-            FileNotFoundError: If no PlantUML installation is found
-        """
-        # Try different common PlantUML commands
-        commands = [
-            'plantuml',  # System-wide installation
-            'java -jar plantuml.jar',  # JAR file in current directory
-            '/usr/local/bin/plantuml',  # Common installation path
-            '/opt/plantuml/plantuml.jar',  # Another common path
-        ]
-        
-        for cmd in commands:
-            try:
-                # Test if command is available
-                if cmd.startswith('java -jar'):
-                    # For Java commands, check if the jar exists
-                    jar_path = cmd.split()[-1]
-                    if os.path.exists(jar_path):
-                        return cmd
-                else:
-                    # For direct commands, test execution
-                    subprocess.run([cmd.split()[0], '-version'], 
-                                 capture_output=True, check=True, timeout=5)
-                    return cmd
-            except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-                continue
-        
-        raise FileNotFoundError("PlantUML not found. Install PlantUML or provide path to plantuml.jar")
-
-    def _render_via_web_service(self, puml_source: str, output_format: str, 
-                               server: str = "http://www.plantuml.com/plantuml") -> bytes:
-        """
-        Render PlantUML using web service (fallback when local PlantUML not available).
-        
-        Args:
-            puml_source: PlantUML source code
-            output_format: Target format (png, svg, txt)
-            server: PlantUML server URL
-        
-        Returns:
-            bytes: Rendered output
-        """
-        # PlantUML web service encoding
-        compressed = zlib.compress(puml_source.encode('utf-8'))
-        encoded = base64.b64encode(compressed).decode('ascii')
-        
-        # Convert to PlantUML URL encoding
-        encoded = encoded.replace('+', '-').replace('/', '_')
-        
-        format_map = {
-            'png': 'png',
-            'svg': 'svg', 
-            'txt': 'txt'
-        }
-        
-        if output_format.lower() not in format_map:
-            raise ValueError(f"Web service only supports: {list(format_map.keys())}")
-        
-        url_format = format_map[output_format.lower()]
-        url = f"{server}/{url_format}/{encoded}"
-        
-        try:
-            with urllib.request.urlopen(url, timeout=30) as response:
-                return response.read()
-        except Exception as e:
-            raise RuntimeError(f"Web service rendering failed: {e}")
-
-    def generate_url(self, server: str = "http://www.plantuml.com/plantuml", 
-                     output_format: str = 'png') -> str:
-        """
-        Generate a URL for viewing the PlantUML diagram online.
-        
-        Args:
-            server: PlantUML server URL
-            output_format: Format for the URL (png, svg, txt)
-        
-        Returns:
-            str: URL to view the diagram
-        """
-        puml_source = self._generate_source()
-        
-        # PlantUML web service encoding
-        compressed = zlib.compress(puml_source.encode('utf-8'))
-        encoded = base64.b64encode(compressed).decode('ascii')
-        encoded = encoded.replace('+', '-').replace('/', '_')
-        
-        format_map = {
-            'png': 'png',
-            'svg': 'svg',
-            'txt': 'txt'
-        }
-        
-        url_format = format_map.get(output_format.lower(), 'png')
-        return f"{server}/{url_format}/{encoded}"
-
-    def save(self, filename: str, output_format: str = None) -> None:
-        """
-        Save the generated PlantUML to a file.
-        
-        Args:
-            filename: Output filename
-            output_format: Output format ('raw', 'png', 'svg', 'pdf', 'eps', 'txt').
-                          If None, infers from filename extension.
-        """
-        # Infer format from filename if not specified
-        if output_format is None:
-            ext = os.path.splitext(filename)[1].lower()
-            format_map = {
-                '.puml': 'raw',
-                '.plantuml': 'raw', 
-                '.png': 'png',
-                '.svg': 'svg',
-                '.pdf': 'pdf',
-                '.eps': 'eps',
-                '.txt': 'txt'
-            }
-            output_format = format_map.get(ext, 'raw')
-        
-        # Generate content
-        content = self.generate(output_format)
-        
-        # Write to file
-        if output_format == 'raw':
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(content)
-        else:
-            with open(filename, 'wb') as f:
-                f.write(content)
+        puml_source = self.generate()
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(puml_source)
