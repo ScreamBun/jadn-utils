@@ -620,3 +620,64 @@ def test_concise_serialize_complex():
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+def test_issue_field_disappearing():
+    jadn_schema = {
+    "meta": {
+        "title": "JADN Schema Start Up Template",
+        "package": "http://JADN-Schema-Start-Up-Template-URI",
+        "roots": ["Choices", "Choice-Regular", "Choice-Combine", "Choice-Combine-Complex"]
+    },
+    "types": [
+        ["Choices", "Record", [], "", [
+            [1, "choice_combine", "Choice-Combine", [], ""],
+            [2, "choice_regular", "Choice-Regular", [], ""],
+            [3, "choice_combine_complex", "Choice-Combine-Complex", [], ""]
+        ]],
+        ["Choice-Combine", "Choice", ["CO"], "", [
+            [1, "string_choice_2", "String", ["N"], ""],
+            [2, "integer_choice_2", "Integer", [], ""]
+        ]],
+        ["Choice-Regular", "Choice", [], "", [
+            [1, "string_choice", "String", [], ""],
+            [2, "integer_choice", "String", [], ""]
+        ]],
+        ["Choice-Combine-Complex", "Choice", ["CO"], "", [
+            [1, "field_value_1", "Basic-Record", [], ""],
+            [2, "field_value_2", "String", ["N"], ""]
+        ]],
+        ["Basic-Record", "Record", [], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+        "field_value_1": "1",
+        "field_value_2": "2"
+    }
+    expected_json = {
+        1: ["1", "2"]
+    }
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json
+
+    nested_json = {
+        "choice_combine": "a",
+        "choice_regular": {
+            "string_choice": "b"
+        },
+        "choice_combine_complex": {
+            "field_value_1": "c",
+            "field_value_2": "d"
+        }
+    }
+
+    expected_json = [
+        "a",
+        {1: 'b'},
+        ["c", "d"]
+    ]
+
+    assert serialize_as_concise(jadn_types, nested_json) == expected_json

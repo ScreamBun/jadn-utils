@@ -1,7 +1,7 @@
 import os
 import json
 import pandas as pd
-from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options
+from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def
 from jadnutils.utils.consts import CONCISE_IGNORE_FORMATS
 
 ############### HTML Convert Utils ###############
@@ -130,6 +130,8 @@ def serialize_as_concise(jadn_types, json_obj):
 		field = get_field_by_data(jadn_types, json_obj)
 		type = get_type(field)
 		children = get_children(field)
+		if children and isinstance(children, list) and len(children) > 0 and not isinstance(children[0], list):
+			children = [children] # Ensure children is the correct shape
 		type_options_dict = {field[0]: get_options(field)} if field else {}
 		type_options = get_options(field)
 		field_options_dict = {child[1]: get_options(child) for child in children} if children else {}
@@ -144,8 +146,15 @@ def serialize_as_concise(jadn_types, json_obj):
 			return enum_field[0] if enum_field else None
 		elif type == "Choice":
 			hasID = "=" in type_options
+			isCombine = "CO" in type_options or "CA" in type_options or "CX" in type_options
 			choice_field = get_field_from_struct(field, list(json_obj.keys())[0], id = hasID)
-			return {choice_field[0] : serialize_as_concise(jadn_types, json_obj.get(str(choice_field[0])) if hasID else json_obj.get(choice_field[1]))} if choice_field else None
+			if isCombine:
+				idx = jadn_types.index(field)
+				field[1] = get_type(get_true_type_def(jadn_types, choice_field))
+				field[4] = choice_field
+				jadn_types[idx] = field
+				return {choice_field[0] : serialize_as_concise(jadn_types, json_obj)}
+			return {choice_field[0] : serialize_as_concise(jadn_types, json_obj.get(str(choice_field[0])) if hasID or isCombine else json_obj.get(choice_field[1]))} if choice_field else None
 		elif type == "Map":
 			map_field = get_field_from_struct(field, list(json_obj.keys())[0])
 			if map_field:

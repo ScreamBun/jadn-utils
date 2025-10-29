@@ -35,6 +35,18 @@ def get_children(field):
     else:
         return []
 
+def get_parent(jadn_types, field):
+    """
+    Get the parent type definition of a given field.
+    """
+    field_name = field[0] if isinstance(field[0], str) else field[1]
+    for type_def in jadn_types:
+        children = get_children(type_def)
+        for child in children:
+            if child[1] == field_name:
+                return type_def
+    return None
+
 def get_options(field):
     """
     Get the options from a field definition.
@@ -89,13 +101,15 @@ def get_field_by_data(jadn_types, data):
     for jadn_type in jadn_types:
         found = True
         children = get_children(jadn_type)
+        if children and isinstance(children, list) and len(children) > 0 and not isinstance(children[0], list):
+            children = [children]
         if not children:
             continue
 
         true_type_def = get_true_type_def(jadn_types, jadn_type)
 
         # Account for Enumerated
-        if len(children[0]) == 3 and len(field_values) == 1:
+        if children and len(children) > 0 and isinstance(children[0], list) and len(children[0]) == 3 and len(field_values) == 1:
             if "=" in get_options(true_type_def): # Account for ID opt
                 children_names = [child[0] for child in children]
             else:
@@ -143,8 +157,7 @@ def get_true_type_def(jadn_types, field):
     if field_type in CORE_TYPES:
         return field
     
-    field_name = field[0]
-    type_def = get_field_by_name(jadn_types, field_name)
+    type_def = get_field_by_name(jadn_types, field_type)
 
     if not type_def:
         return field
