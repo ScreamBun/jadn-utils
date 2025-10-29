@@ -130,10 +130,11 @@ def serialize_as_concise(jadn_types, json_obj):
 		field = get_field_by_data(jadn_types, json_obj)
 		type = get_type(field)
 		children = get_children(field)
+		type_options_dict = {field[0]: get_options(field)} if field else {}
 		type_options = get_options(field)
-		field_options = {child[1]: get_options(child) for child in children} if children else {}
-		convert_format_value(type_options, json_obj)
-		convert_format_value(field_options, json_obj)
+		field_options_dict = {child[1]: get_options(child) for child in children} if children else {}
+		convert_format_value(type_options_dict, json_obj)
+		convert_format_value(field_options_dict, json_obj)
 
 		if type == "Record":
 			return [serialize_as_concise(jadn_types, value) for value in json_obj.values()]

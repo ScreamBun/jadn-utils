@@ -113,6 +113,11 @@ def get_field_by_data(jadn_types, data):
             for name in field_names:
                 if name in children_names:
                     return jadn_type
+
+        # Account for special ipvnet Array case
+        if get_type(true_type_def) == "Array" and ("/ipv4-net" in get_options(true_type_def) or "/ipv6-net" in get_options(true_type_def)):
+            if true_type_def[0] in field_names:
+                return jadn_type
                 
         found_count = 0
         opt_count = 0
