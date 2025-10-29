@@ -197,11 +197,13 @@ class GvGenerator:
                     self._edge(dot, row["name"], field[2], label=field[1], taillabel="1")
            
         extends = get_extends(opts)    
-        if extends != '':
+        # Optionally show/hide dashed 'link' edges (extends/restricts)
+        show_links = self.style.get('show_links', True)
+        if extends != '' and show_links:
             self._edge(dot, row["name"], extends, label="extends", style="dashed", taillabel="1")
                 
         restricts = get_restricts(opts)    
-        if restricts != '':       
+        if restricts != '' and show_links:       
             self._edge(dot, restricts, row["name"], label="restricts", style="dashed", taillabel="1")                                             
                     
     def build_arrayof_node(self, row, dot):
@@ -320,11 +322,13 @@ class GvGenerator:
         dot.node(row["name"], label=label, **node_attrs)
 
         pointer = get_pointer(opts)
-        if pointer != '':       
+        # pointer/enumerated are link-style dashed edges; respect show_links
+        show_links = self.style.get('show_links', True)
+        if pointer != '' and show_links:       
             self._edge(dot, row["name"], pointer, label="pointer", style="dashed", taillabel="1")
             
         enumerated = get_enumerated(opts)
-        if enumerated != '':       
+        if enumerated != '' and show_links:       
             self._edge(dot, row["name"], enumerated, label="enumerated", style="dashed", taillabel="1")                                
 
     def generate(self, *args, **kwargs):
