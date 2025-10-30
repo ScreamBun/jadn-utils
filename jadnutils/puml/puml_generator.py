@@ -32,7 +32,6 @@ class PumlGenerator:
         'class_style': 'class',  # 'class', 'entity', 'interface'
         'relationship_style': '--',  # '--', '->', '<->', etc.
         'show_primitive_types': False,
-        'group_by_package': True,
         'theme': 'aws-orange',  # PlantUML theme name
         'title': None,
         'note_position': 'right'  # 'left', 'right', 'top', 'bottom'
