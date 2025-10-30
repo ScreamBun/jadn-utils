@@ -1,5 +1,5 @@
 from jadnutils.gv.gv_generator import GvGenerator
-from tests.helpers import find_edge_attr_block, parse_edge_attrs
+from jadnutils.tests.helpers import find_edge_attr_block, parse_edge_attrs
 
 
 def make_simple_schema():
