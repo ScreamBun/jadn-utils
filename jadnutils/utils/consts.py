@@ -1,8 +1,9 @@
-
-  
-
 from typing import Union
-
+from datetime import datetime
+import time
+import isodate
+from dateutil import parser
+import base64
 
 PRIMITIVE_TYPES = ("Binary", "Boolean", "Integer", "Number", "String")
 SELECTOR_TYPES = ("Enumerated", "Choice")
@@ -374,4 +375,21 @@ OPTION_ID = {   # Pre-computed reverse index - MUST match TYPE_OPTIONS and FIELD
     'key':      chr(75),
     'link':     chr(76),
     'not':      chr(78),
+}
+
+# Formats specifying a textual representation for Binary, Integer, Number, or Array types
+CONCISE_IGNORE_FORMATS = {
+    "/dayTimeDuration": lambda x: int(isodate.parse_duration(x).total_seconds()),
+    "/yearMonthDuration": lambda x: (lambda d: int((d.years or 0) * 12 + (d.months or 0)))(isodate.parse_duration(x)),
+    "/gYearMonth": lambda x: int(datetime.combine(isodate.parse_date(x.lstrip('-') + "-01"), datetime.min.time()).timestamp()),
+    "/gMonthDay": lambda x: int(datetime(1972, *map(int, x[2:].split('Z')[0].split('+')[0].split('-'))).timestamp()),
+    "/gYear": lambda x: x if isinstance(x, int) else int(parser.parse(x.split('+')[0].split('Z')[0] + "-01-01").timestamp()),
+    "/ipv4-net": lambda x: x.encode("utf-8").hex(),
+    "/ipv6-net": lambda x: x.encode("utf-8").hex(),
+    "/ipv4-addr": lambda x: x.encode("utf-8").hex(),
+    "/ipv6-addr": lambda x: x.encode("utf-8").hex(),
+    "/x": lambda x: x.encode("utf-8").hex(),
+    "/X": lambda x: x.encode("utf-8").hex(),
+    "/base64Binary": lambda x: base64.b64decode(x).hex(),
+    "/b64": lambda x: base64.b64decode(x).hex()
 }

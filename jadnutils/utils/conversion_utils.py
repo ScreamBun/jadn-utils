@@ -1,8 +1,10 @@
 import os
 import json
 import pandas as pd
+from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def
+from jadnutils.utils.consts import CONCISE_IGNORE_FORMATS
 
-
+############### HTML Convert Utils ###############
 def build_type_summary_html(name, type_val, options, description):
 	"""
 	Build HTML table for type, options, and description, including a heading for the name.
@@ -101,6 +103,98 @@ def get_theme_css():
 	except Exception:
 		return ''
 
+############### JSON Convert Utils ###############
+def serialize_as_compact(jadn_types, json_obj):
+	"""
+	Serialize JSON object to compact representation.
+	Example: {"a": 1, "b": 2} => [1, 2]
+	"""
+	if isinstance(json_obj, dict): # {a:1, b:2}
+		field = get_field_by_data(jadn_types, json_obj)
+		type = get_type(field)
+		if type == "Record":
+			return [serialize_as_compact(jadn_types, value) for value in json_obj.values()]
+		else:
+			return {key: serialize_as_compact(jadn_types, value) for key, value in json_obj.items()}
+	elif isinstance(json_obj, list): # [{a:1, b:2}]
+		return [serialize_as_compact(jadn_types, item) for item in json_obj]
+	else: # value base case
+		return json_obj
+
+def serialize_as_concise(jadn_types, json_obj):
+	"""
+	Serialize JSON object to concise representation.
+	Special serializations: enumeration returns id only, choice returns field ID, map returns field ID, record returns values.
+	"""
+	if isinstance(json_obj, dict):
+		field = get_field_by_data(jadn_types, json_obj)
+		type = get_type(field)
+		children = get_children(field)
+		if children and isinstance(children, list) and len(children) > 0 and not isinstance(children[0], list):
+			children = [children] # Ensure children is the correct shape
+		type_options_dict = {field[0]: get_options(field)} if field else {}
+		type_options = get_options(field)
+		field_options_dict = {child[1]: get_options(child) for child in children} if children else {}
+		convert_format_value(type_options_dict, json_obj)
+		convert_format_value(field_options_dict, json_obj)
+
+		if type == "Record":
+			return [serialize_as_concise(jadn_types, value) for value in json_obj.values()]
+		elif type == "Enumerated":
+			hasID = "=" in type_options
+			enum_field = get_field_from_struct(field, list(json_obj.values())[0], id = hasID)
+			return enum_field[0] if enum_field else None
+		elif type == "Choice":
+			hasID = "=" in type_options
+			isCombine = "CO" in type_options or "CA" in type_options or "CX" in type_options
+			choice_field = get_field_from_struct(field, list(json_obj.keys())[0], id = hasID)
+			if isCombine:
+				idx = jadn_types.index(field)
+				field[1] = get_type(get_true_type_def(jadn_types, choice_field))
+				field[4] = choice_field
+				jadn_types[idx] = field
+				return {choice_field[0] : serialize_as_concise(jadn_types, json_obj)}
+			return {choice_field[0] : serialize_as_concise(jadn_types, json_obj.get(str(choice_field[0])) if hasID or isCombine else json_obj.get(choice_field[1]))} if choice_field else None
+		elif type == "Map":
+			map_field = get_field_from_struct(field, list(json_obj.keys())[0])
+			if map_field:
+				map_children = get_children(map_field)
+				result = {}
+				for key, value in json_obj.items():
+					key_field = get_field_from_struct(field,  key)
+					if key_field:
+						result[key_field[0]] = serialize_as_concise(jadn_types, value)
+				return result
+			return {}
+		else:
+			return {key: serialize_as_concise(jadn_types, value) for key, value in json_obj.items()}
+	elif isinstance(json_obj, list):
+		return [serialize_as_concise(jadn_types, item) for item in json_obj]
+	else:
+		field = get_field_by_data(jadn_types, json_obj)
+		if field and get_type(field) == "Enumerated":
+			return serialize_as_concise(jadn_types, {field[0]: json_obj})
+		return json_obj
+
+def convert_format_value(format_dict, json_obj):
+	"""
+	Convert value based on format.
+	"""
+	if not isinstance(json_obj, dict):
+		return
+
+	if not isinstance(format_dict, dict):
+		return
+
+	for key, value in json_obj.items():
+		for name, formats in format_dict.items():
+			for format in formats:
+				if format and name == key:
+					converter = CONCISE_IGNORE_FORMATS[format] if format in CONCISE_IGNORE_FORMATS else None
+					if converter:
+						json_obj[key] = converter(value)
+
+############### JSON Validate Utils ###############
 def validate_json(data):
 	"""
 	Validate if the input is a valid JSON string or object.

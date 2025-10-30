@@ -1,4 +1,4 @@
-# jadn-validation
+# jadn-utils
 
 ## How to create the whl
 
@@ -15,7 +15,7 @@ use an `<hr/>`. Graphviz labels don't support CSS, so this project simulates pad
 by inserting an empty table row with a fixed height.
 
 - Per-graph: set `style['label']['spacer_height']` (preferred) or the legacy
-	`style['label_spacer_height']` when creating a `GvGenerator`.
+ `style['label_spacer_height']` when creating a `GvGenerator`.
 
 Example:
 
