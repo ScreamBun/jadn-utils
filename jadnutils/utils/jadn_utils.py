@@ -82,12 +82,11 @@ def get_field_by_name(jadn_types, name):
             return type_def
     return None
 
-def get_inherited_fields(jadn_types, field):
+def get_inherited_fields(jadn_types, field, inherited_fields = []):
     """
     Retrieve all inherited fields for a given field definition
     """
     parent = [opt for opt in get_options(field) if opt.startswith('e') or opt.startswith('r')]
-    inherited_fields = []
 
     if parent and isinstance(parent, list):
         clean_parent = parent[0][1:]
@@ -100,29 +99,34 @@ def get_inherited_fields(jadn_types, field):
             if opt == 'e':  # extends
                 for child in children:
                     idx = child[0]
-                    if idx in [f[0] for f in inherited_fields]:
+                    if idx not in [f[0] for f in inherited_fields]:
                         # overwrite fields
-                        inherited_fields = [f if f[0] != idx else child for f in inherited_fields]
-                    else:
                         inherited_fields.append(child)
             elif opt == 'r':  # restricts
+                # Filter inherited fields so that new fields aren't added
+                updated_fields = []
+                for inherited_field in inherited_fields:
+                    idx = inherited_field[0]
+                    if idx in [f[0] for f in children]:
+                        updated_fields.append(inherited_field)
+                inherited_fields = sorted(updated_fields, key=lambda x: x[0])
+
+                # Normal overwrite logic
                 for child in children:
                     idx = child[0]
-                    if idx in [f[0] for f in inherited_fields]:
+                    if idx not in [f[0] for f in inherited_fields]:
                         # overwrite fields
-                        inherited_fields = [f if f[0] != idx else child for f in inherited_fields]
-                    else:
                         inherited_fields.append(child)
 
             grandparent = [opt for opt in get_options(parent_field) if opt.startswith('e') or opt.startswith('r')]
 
             if grandparent and isinstance(grandparent, list) and len(grandparent) > 0:
-                inherited_fields.extend(get_inherited_fields(jadn_types, parent_field))
+                inherited_fields.extend(get_inherited_fields(jadn_types, parent_field, inherited_fields))
    
     dedup = {}
     for f in inherited_fields:
         dedup[f[0]] = f
-    return list(dedup.values())
+    return sorted(list(dedup.values()), key=lambda x: x[0])
 
 def get_field_by_data(jadn_types, data):
     """
@@ -145,7 +149,7 @@ def get_field_by_data(jadn_types, data):
         children = list(get_children(jadn_type) or [])
         handleInheritance = len([opt for opt in get_options(jadn_type) if opt.startswith('e') or opt.startswith('r')]) > 0
         if handleInheritance: 
-            children.extend(get_inherited_fields(jadn_types, jadn_type))
+            children = get_inherited_fields(jadn_types, jadn_type, children)
         if children and isinstance(children, list) and len(children) > 0 and not isinstance(children[0], list):
             children = [children]
         if not children:

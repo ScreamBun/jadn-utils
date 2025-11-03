@@ -8,10 +8,12 @@ setup(
         "pytest",
         "pandas",
         "isodate",
-        "python-dateutil"
+        "python-dateutil",
+        "graphviz"
     ],
     include_package_data=True,
     package_data={
         "jadnutils.support": ["theme.css"],
     },
+    zip_safe=False
 )
