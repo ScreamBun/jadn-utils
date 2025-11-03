@@ -1,0 +1,33 @@
+import os
+import sys
+import json
+from jadnutils.utils.jadn_utils import get_inherited_fields, get_field_by_name, get_children
+
+def test_get_inherited_fields():
+    j_schema = {
+        "types": [
+            ["Common-Items", "Array", [], "", [
+                [1, "common_1", "Integer", ["[0"]],
+                [2, "common_2", "Integer", ["[0"]],
+                [3, "common_3", "Integer", ["[0"]],
+            ]],            
+            ["Root-Test", "Array", ["eCommon-Items"], "", [
+                [111, "item_1", "String", [], ""],
+                [222, "item_2", "String", ["[0"], ""],
+                [333, "item_3", "String", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = j_schema.get("types", [])
+
+    root_field = get_field_by_name(jadn_types, "Root-Test")
+    root_children = get_children(root_field)
+    root_children.extend(get_inherited_fields(jadn_types, root_field))
+    assert root_children == [
+        [111, "item_1", "String", [], ''],
+        [222, "item_2", "String", ["[0"], ''],
+        [333, "item_3", "String", ["[0"], ''],
+        [1, "common_1", "Integer", ["[0"]],
+        [2, "common_2", "Integer", ["[0"]],
+        [3, "common_3", "Integer", ["[0"]],
+    ]
