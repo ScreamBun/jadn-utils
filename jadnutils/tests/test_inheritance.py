@@ -24,12 +24,12 @@ def test_get_inherited_fields():
     root_children = get_children(root_field)
     root_children = get_inherited_fields(jadn_types, root_field, root_children)
     assert root_children == [
-        [111, "item_1", "String", [], ''],
-        [222, "item_2", "String", ["[0"], ''],
-        [333, "item_3", "String", ["[0"], ''],
         [1, "common_1", "Integer", ["[0"]],
         [2, "common_2", "Integer", ["[0"]],
         [3, "common_3", "Integer", ["[0"]],
+        [111, "item_1", "String", [], ''],
+        [222, "item_2", "String", ["[0"], ''],
+        [333, "item_3", "String", ["[0"], '']
     ]
 
 def test_get_inherited_fields_extend_overwrite():

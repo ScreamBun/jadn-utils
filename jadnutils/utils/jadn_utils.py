@@ -126,7 +126,7 @@ def get_inherited_fields(jadn_types, field, inherited_fields = []):
     dedup = {}
     for f in inherited_fields:
         dedup[f[0]] = f
-    return list(dedup.values())
+    return sorted(list(dedup.values()), key=lambda x: x[0])
 
 def get_field_by_data(jadn_types, data):
     """
