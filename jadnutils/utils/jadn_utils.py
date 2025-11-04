@@ -11,27 +11,31 @@ def get_title(data):
     except Exception:
         return 'JADN Schema'
 
-def get_type(field):
+def get_type(j_type):
     """
-    Get the type from a field definition.
+    Get the type from a type definition.
+    
+    j_type is the type definition list
     """
-    if not isinstance(field, list):
+    if not isinstance(j_type, list):
         return None
-    if isinstance(field[0], str):
-        return field[1]
-    elif isinstance(field[1], str):
-        return field[2]
+    if isinstance(j_type[0], str):
+        return j_type[1]
+    elif isinstance(j_type[1], str):
+        return j_type[2]
     else:
         return None
 
-def get_children(field):
+def get_children(j_type):
     """
-    Get the children from a field definition.
+    Get the children from a j_type definition.
+    
+    j_type is the type definition list
     """
-    if not isinstance(field, list):
+    if not isinstance(j_type, list):
         return None
-    if isinstance(field[0], str) and len(field) > 4:
-        return field[4]
+    if isinstance(j_type[0], str) and len(j_type) > 4:
+        return j_type[4]
     else:
         return []
 
@@ -47,84 +51,80 @@ def get_parent(jadn_types, field):
                 return type_def
     return None
 
-def get_options(field):
+def get_options(type_or_field):
     """
-    Get the options from a field definition.
+    Get the options from a type or field definition.
     """
-    if not isinstance(field, list):
+    if not isinstance(type_or_field, list):
         return None
-    if isinstance(field[0], str):
-        return field[2]
-    elif isinstance(field[1], str) and len(field) > 3:
-        return field[3]
+    if isinstance(type_or_field[0], str):
+        return type_or_field[2]
+    elif isinstance(type_or_field[1], str) and len(type_or_field) > 3:
+        return type_or_field[3]
     else:
         return []
 
-def get_options(field):
+def get_type_by_name(jadn_types, name):
     """
-    Get the options from a field definition.
-    """
-    if not isinstance(field, list):
-        return None
-    if isinstance(field[0], str):
-        return field[2]
-    elif isinstance(field[1], str) and len(field) > 3:
-        return field[3]
-    else:
-        return []
-
-def get_field_by_name(jadn_types, name):
-    """
-    Retrieve a field definition by its name from jadn_types
+    Retrieve a type definition by its name from jadn_types
+    
+    jadn_types is the list of all JADN type definitions
+    name is the name of the type definition to retrieve
+    
     """
     for type_def in jadn_types:
         if type_def[0] == name:
             return type_def
     return None
 
-def get_inherited_fields(jadn_types, field, inherited_fields = []):
+def get_inherited_fields(jadn_types, j_type, j_fields):
     """
-    Retrieve all inherited fields for a given field definition
+    Retrieve all inherited fields for a given type definition
+    
+    jadn_types is the list of all JADN type definitions
+    j_type is the type definition to check for inheritance
+    j_fields is the current list of fields to which inherited fields will be added
+    
     """
-    parent = [opt for opt in get_options(field) if opt.startswith('e') or opt.startswith('r')]
+    parent = [opt for opt in get_options(j_type) if opt.startswith('e') or opt.startswith('r')]
 
     if parent and isinstance(parent, list):
         clean_parent = parent[0][1:]
         opt = parent[0][0]
 
-        parent_field = get_field_by_name(jadn_types, clean_parent)
+        parent_field = get_type_by_name(jadn_types, clean_parent)
         if parent_field:
             children = get_children(parent_field)
 
             if opt == 'e':  # extends
                 for child in children:
                     idx = child[0]
-                    if idx not in [f[0] for f in inherited_fields]:
+                    if idx not in [f[0] for f in j_fields]:
                         # overwrite fields
-                        inherited_fields.append(child)
+                        j_fields.append(child)
             elif opt == 'r':  # restricts
                 # Filter inherited fields so that new fields aren't added
                 updated_fields = []
-                for inherited_field in inherited_fields:
+                for inherited_field in j_fields:
                     idx = inherited_field[0]
                     if idx in [f[0] for f in children]:
                         updated_fields.append(inherited_field)
-                inherited_fields = sorted(updated_fields, key=lambda x: x[0])
+                j_fields = sorted(updated_fields, key=lambda x: x[0])
 
                 # Normal overwrite logic
                 for child in children:
                     idx = child[0]
-                    if idx not in [f[0] for f in inherited_fields]:
+                    if idx not in [f[0] for f in j_fields]:
                         # overwrite fields
-                        inherited_fields.append(child)
+                        j_fields.append(child)
 
             grandparent = [opt for opt in get_options(parent_field) if opt.startswith('e') or opt.startswith('r')]
 
             if grandparent and isinstance(grandparent, list) and len(grandparent) > 0:
-                inherited_fields.extend(get_inherited_fields(jadn_types, parent_field, inherited_fields))
+                j_fields.extend(get_inherited_fields(jadn_types, parent_field, j_fields))
    
     dedup = {}
-    for f in inherited_fields:
+    for f in j_fields:
         dedup[f[0]] = f
     return sorted(list(dedup.values()), key=lambda x: x[0])
 
@@ -206,7 +206,7 @@ def get_true_type_def(jadn_types, field):
     if field_type in CORE_TYPES:
         return field
     
-    type_def = get_field_by_name(jadn_types, field_type)
+    type_def = get_type_by_name(jadn_types, field_type)
 
     if not type_def:
         return field

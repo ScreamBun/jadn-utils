@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from jadnutils.utils.jadn_utils import get_inherited_fields, get_field_by_name, get_children
+from jadnutils.utils.jadn_utils import get_inherited_fields, get_type_by_name, get_children
 
 def test_get_inherited_fields():
     j_schema = {
@@ -20,7 +20,7 @@ def test_get_inherited_fields():
     }
     jadn_types = j_schema.get("types", [])
 
-    root_field = get_field_by_name(jadn_types, "Root-Test")
+    root_field = get_type_by_name(jadn_types, "Root-Test")
     root_children = get_children(root_field)
     root_children = get_inherited_fields(jadn_types, root_field, root_children)
     assert root_children == [
@@ -47,7 +47,7 @@ def test_get_inherited_fields_extend_overwrite():
     }
     jadn_types = j_schema.get("types", [])
 
-    root_field = get_field_by_name(jadn_types, "Root-Test")
+    root_field = get_type_by_name(jadn_types, "Root-Test")
     root_children = get_children(root_field)
     root_children = get_inherited_fields(jadn_types, root_field, root_children)
     assert root_children == [
@@ -72,7 +72,7 @@ def test_get_inherited_fields_restrict_overwrite():
     }
     jadn_types = j_schema.get("types", [])
 
-    root_field = get_field_by_name(jadn_types, "Root-Test")
+    root_field = get_type_by_name(jadn_types, "Root-Test")
     root_children = get_children(root_field)
     root_children = get_inherited_fields(jadn_types, root_field, root_children)
     assert root_children == [

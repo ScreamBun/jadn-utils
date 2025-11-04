@@ -3,11 +3,9 @@ import sys
 import pytest
 from jadnutils.utils.jadn_utils import (
     get_title, get_type, get_children, get_parent, get_options,
-    get_field_by_name, get_inherited_fields, get_field_by_data,
-    get_true_type_def, get_field_from_struct, is_structure,
-    is_selector, jadn2typestr, topts_s2d
+    get_type_by_name, get_inherited_fields, get_field_by_data,
+    get_true_type_def, get_field_from_struct, jadn2typestr, topts_s2d
 )
-from jadnutils.utils.consts import STRUCTURED_TYPES, SELECTOR_TYPES
 
 
 class TestJADNUtils:
@@ -152,7 +150,7 @@ class TestJADNUtils:
     def test_get_field_by_name(self, sample_schema):
         """Test get_field_by_name function."""
         types = sample_schema["types"]
-        result = get_field_by_name(types, "Person")
+        result = get_type_by_name(types, "Person")
         assert result is not None
         assert result[0] == "Person"
         assert result[1] == "Record"
@@ -160,14 +158,14 @@ class TestJADNUtils:
     def test_get_field_by_name_not_found(self, sample_schema):
         """Test get_field_by_name when field is not found."""
         types = sample_schema["types"]
-        result = get_field_by_name(types, "NonExistent")
+        result = get_type_by_name(types, "NonExistent")
         assert result is None
     
     def test_get_inherited_fields(self, sample_schema):
         """Test get_inherited_fields function."""
         types = sample_schema["types"]
-        field = ["Person", "Record", [], "A person"]
-        result = get_inherited_fields(types, field)
+        type = ["Person", "Record", [], "A person"]
+        result = get_inherited_fields(types, type, [])
         # This function returns empty list when no inheritance options are found
         assert isinstance(result, list)
     
@@ -296,7 +294,7 @@ def test_music_lib_schema():
         assert len(types) > 0
         
         # Test getting a specific type
-        album_type = get_field_by_name(types, "Album")
+        album_type = get_type_by_name(types, "Album")
         assert album_type is not None
         
         # Test getting children of Album type
