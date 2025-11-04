@@ -82,11 +82,11 @@ def get_field_by_name(jadn_types, name):
             return type_def
     return None
 
-def get_inherited_fields(jadn_types, field, inherited_fields = []):
+def get_inherited_fields(jadn_types, j_type, inherited_fields = []):
     """
-    Retrieve all inherited fields for a given field definition
+    Retrieve all inherited fields for a given type definition
     """
-    parent = [opt for opt in get_options(field) if opt.startswith('e') or opt.startswith('r')]
+    parent = [opt for opt in get_options(j_type) if opt.startswith('e') or opt.startswith('r')]
 
     if parent and isinstance(parent, list):
         clean_parent = parent[0][1:]

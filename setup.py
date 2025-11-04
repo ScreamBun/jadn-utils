@@ -2,7 +2,7 @@ from setuptools import setup
  
 setup(
     name="jadnutils",
-    version="0.4.0", 
+    version="0.4.1", 
     packages=["jadnutils", "jadnutils.json", "jadnutils.html", "jadnutils.utils", "jadnutils.support", "jadnutils.gv", "jadnutils.gv.utils"],
     install_requires=[
         "pytest",
