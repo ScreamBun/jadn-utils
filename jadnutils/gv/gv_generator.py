@@ -6,6 +6,7 @@ from jadnutils.gv.utils.gv_utils import build_basic_label, build_arrayof_label, 
 
 class GvGenerator:
 
+    # TODO: Move to constants
     CONCEPTUAL = 'conceptual'
     LOGICAL = 'logical'
     INFORMATIONAL = 'informational'

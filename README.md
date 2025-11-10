@@ -101,3 +101,233 @@ g = GvGenerator(schema, style={
 These settings are applied per-graph and are carried through to all label
 builders so fields, options, and enumerated items are shown or hidden
 consistently.
+
+## PlantUML Generator
+
+The `PumlGenerator` class creates PlantUML class diagrams from JADN schemas, using pandas DataFrames for data processing. It follows similar patterns to `GvGenerator` but outputs PlantUML syntax instead of Graphviz DOT format.
+
+### Basic Usage
+
+```py
+from jadnutils.puml.puml_generator import PumlGenerator
+
+# Load your JADN schema
+schema = {...}
+
+# Generate PlantUML with default settings
+generator = PumlGenerator(schema)
+puml_source = generator.generate()
+
+# Save to file
+generator.save("output/schema.puml")
+```
+
+### PNG and Image Output
+
+The PlantUML generator supports multiple output formats including PNG, SVG, and other image formats:
+
+```py
+# Generate PNG image (uses web service fallback)
+png_data = generator.generate(output_format='png')
+with open('schema.png', 'wb') as f:
+    f.write(png_data)
+
+# Generate SVG image
+svg_data = generator.generate(output_format='svg')
+with open('schema.svg', 'wb') as f:
+    f.write(svg_data)
+
+# Auto-detect format from file extension
+generator.save('schema.png')  # Automatically generates PNG
+generator.save('schema.svg')  # Automatically generates SVG
+generator.save('schema.puml') # Saves PlantUML source
+
+# Generate URL for online viewing
+url = generator.generate_url(output_format='png')
+print(f"View online: {url}")
+```
+
+**Supported formats:**
+- `'raw'` (default) — PlantUML source code
+- `'png'` — PNG image format
+- `'svg'` — SVG vector format  
+- `'pdf'` — PDF format (requires local PlantUML)
+- `'eps'` — EPS format (requires local PlantUML)
+- `'txt'` — ASCII art format
+
+**Rendering methods:**
+1. **Web service** (automatic fallback) — Uses PlantUML.com for PNG, SVG, TXT formats
+2. **Local PlantUML** — Requires PlantUML installation for all formats including PDF, EPS
+
+### PlantUML Detail Levels
+
+The PlantUML generator supports three detail levels similar to the Graphviz generator:
+
+- `PumlGenerator.CONCEPTUAL` (or `'conceptual'`) — shows only class names with stereotypes, no field details
+- `PumlGenerator.LOGICAL` (or `'logical'`) — shows class names and field names only
+- `PumlGenerator.INFORMATIONAL` (or `'informational'`) — shows full field details with IDs, types, and multiplicity
+
+### PlantUML Style Options
+
+You can customize PlantUML generation with these style options (defaults in `PumlGenerator.STYLE_DEFAULT`):
+
+- `detail` (string) — detail level: `conceptual`, `logical`, or `informational`
+- `show_links` (bool) — whether to include relationships between classes
+- `show_fields` (bool) — whether to show field details inside classes
+- `show_multiplicity` (bool) — whether to show multiplicity info (e.g., `[0..1]`, `[1..*]`)
+- `class_style` (string) — PlantUML class type: `class`, `entity`, or `interface`
+- `relationship_style` (string) — relationship arrow style: `--`, `-->`, `<-->`, etc.
+- `show_primitive_types` (bool) — whether to include relationships to primitive types
+- `group_by_package` (bool) — whether to group related types in packages
+- `theme` (string) — PlantUML theme name (default: `aws-orange`)
+- `title` (string) — diagram title (uses schema meta title if not specified)
+- `note_position` (string) — position for root type notes: `left`, `right`, `top`, `bottom`
+
+### Available Themes
+
+The PlantUML generator includes 31 built-in themes. You can get the complete list and theme information programmatically:
+
+```py
+# Get all available themes
+themes = PumlGenerator.get_available_themes()
+print(f"Available themes: {themes}")
+
+# Get information about a specific theme
+info = PumlGenerator.get_theme_info('aws-orange')
+print(f"Theme: {info['name']} ({info['category']})")
+print(f"Description: {info['description']}")
+```
+
+**Theme Categories:**
+- **Professional**: `aws-orange` (default), `carbon-gray`, `cloudscape-design`, `reddress-lightblue`
+- **Bootstrap**: `cerulean`, `cyborg`, `materia`, `minty`, `sandstone`, `sketchy`, `spacelab`, `united`
+- **Dark**: `black-knight`, `hacker`, `reddress-darkblue`, `superhero`
+- **Colorful**: `mars`, `sunlust`, `toy`, `vibrant`
+- **Minimalist**: `bluegray`, `lightgray`, `metal`, `mono`, `plain`, `silver`
+- **Retro**: `amiga`, `blueprint`, `crt-amber`, `mimeograph`
+
+**Theme Examples:**
+```py
+# Professional AWS theme (default)
+generator = PumlGenerator(schema, {'theme': 'aws-orange'})
+
+# Dark theme for presentations
+generator = PumlGenerator(schema, {'theme': 'superhero'})
+
+# Classic blueprint style
+generator = PumlGenerator(schema, {'theme': 'blueprint'})
+
+# Vibrant colors
+generator = PumlGenerator(schema, {'theme': 'vibrant'})
+```
+
+### Example Configurations
+
+```py
+# Conceptual diagram with theme
+conceptual_style = {
+    'detail': PumlGenerator.CONCEPTUAL,
+    'show_links': True,
+    'theme': 'blueprint',
+    'title': 'System Overview'
+}
+
+# Detailed diagram with full information
+detailed_style = {
+    'detail': PumlGenerator.INFORMATIONAL,
+    'show_multiplicity': True,
+    'relationship_style': '-->',
+    'class_style': 'entity'
+}
+
+# Types-only diagram without relationships
+types_only_style = {
+    'detail': PumlGenerator.LOGICAL,
+    'show_links': False,
+    'class_style': 'interface',
+    'theme': 'cerulean'
+}
+
+generator = PumlGenerator(schema, detailed_style)
+```
+
+### Type Representations
+
+The PlantUML generator represents JADN types as follows:
+
+- **Record** → `class` with `<<record>>` stereotype, fields shown as attributes
+- **Map** → `class` with `<<map>>` stereotype
+- **Array** → `class` with `<<array>>` stereotype
+- **Choice** → `class` or `interface` with `<<choice>>` stereotype, options shown as attributes
+- **Enumerated** → `class` with `<<enumeration>>` stereotype, values shown as attributes
+- **ArrayOf** → `class` with `<<arrayOf>>` stereotype and container info
+- **MapOf** → `class` with `<<mapOf>>` stereotype and key/value type info
+
+### Relationships
+
+When `show_links` is enabled, the generator creates relationships for:
+
+- Field references between types
+- ArrayOf container-to-element relationships
+- MapOf container-to-key/value relationships
+- Choice option relationships
+
+### Output and Viewing
+
+Generated PlantUML can be viewed and rendered in multiple ways:
+
+#### Direct Image Generation
+```py
+# Generate PNG directly (no PlantUML installation required)
+png_data = generator.generate(output_format='png')
+with open('diagram.png', 'wb') as f:
+    f.write(png_data)
+
+# Generate online viewing URL
+url = generator.generate_url(output_format='png')
+# Opens diagram in web browser at plantuml.com
+```
+
+#### Traditional PlantUML Viewing
+1. **Online PlantUML Server**: [http://www.plantuml.com/plantuml/uml/](http://www.plantuml.com/plantuml/uml/)
+2. **VS Code PlantUML Extension**: Install the PlantUML extension for inline preview
+3. **Local PlantUML**: Install PlantUML locally and generate images with `java -jar plantuml.jar *.puml`
+4. **PlantUML Web Server**: Run your own PlantUML server instance
+
+The new PNG generation provides immediate image output without requiring local PlantUML installation.
+
+### Complete Example
+
+```py
+from jadnutils.puml.puml_generator import PumlGenerator
+
+schema = {
+    "meta": {"title": "User Management", "roots": ["User"]},
+    "types": [
+        ["User", "Record", [], "User information", [
+            [1, "id", "String", [], "User ID"],
+            [2, "name", "String", [], "User name"],
+            [3, "status", "UserStatus", [], "User status"]
+        ]],
+        ["UserStatus", "Enumerated", [], "User status values", [
+            [1, "active", "Active user"],
+            [2, "inactive", "Inactive user"]
+        ]]
+    ]
+}
+
+# Generate different views
+styles = {
+    'overview': {'detail': 'conceptual', 'theme': 'blueprint'},
+    'detailed': {'detail': 'informational', 'show_multiplicity': True},
+    'types_only': {'show_links': False, 'class_style': 'entity'}
+}
+
+```py
+for name, style in styles.items():
+    generator = PumlGenerator(schema, style)
+    generator.save(f"output/user_management_{name}.puml")
+```
+```
+
+````
