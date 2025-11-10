@@ -17,8 +17,7 @@ def compact_to_verbose(jadn_types, json_obj):
                 result[key] = compact_to_verbose(jadn_types, value)
             return result
         else:
-            return {compact_to_verbose(jadn_types, value) for value in json_obj}
-        return result
+            return [compact_to_verbose(jadn_types, value) for value in json_obj]
     elif isinstance(json_obj, dict):
         return {key: compact_to_verbose(jadn_types, value) for key, value in json_obj.items()}
     else:
@@ -32,19 +31,32 @@ def get_field_from_compact_data(jadn_types, data):
         type = get_type(field)
         if type == "Record":
             children = get_children(field)
-            if len(children) == len(data):
+            if valid_children_length(children, data): # Need length checker with optional consideration
                 # Check if types of children match data
                 match = True
                 for i, child in enumerate(children):
                     child_type = get_type(child)
-                    if not isinstance(data[i], get_python_type(child_type)):
+                    if not isinstance(data[i], get_python_type(jadn_types, child)):
                         match = False
                         break
                 if match:
                     return field
     return None
 
-def get_python_type(jadn_type):
+def valid_children_length(children_array, data_array):
+    """
+    Check if the lengths of the children array and data array are equal,
+    considering optional fields.
+    """
+    if not children_array or not data_array:
+        return False
+    
+    children_required_count = len([child for child in children_array if '[0' not in get_options(child)])
+    data_count = len(data_array)
+
+    return children_required_count <= data_count
+
+def get_python_type(jadn_types, field):
     """
     Map JADN types to Python types.
     """
@@ -59,4 +71,12 @@ def get_python_type(jadn_type):
         "Map": dict,
         "Array": list,
     }
-    return type_mapping.get(jadn_type, object)
+
+    true_type = get_type(field)
+    if true_type not in type_mapping:
+        true_type = get_type(get_true_type_def(jadn_types, field))
+
+    if true_type not in type_mapping:
+        return None
+
+    return type_mapping.get(true_type, object)
