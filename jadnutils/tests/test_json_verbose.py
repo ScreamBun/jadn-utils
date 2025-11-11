@@ -156,28 +156,62 @@ def test_compact_to_verbose_dupe_children():
 
     assert compact_to_verbose(ordered_types, nested_json, root_def) == expected_json
 
-def test_compact_to_verbose_reverse():
+def test_compact_to_verbose_4():
     jadn_schema = {
+        "meta": {
+            "roots": ["Person"],
+            "package": "https://www.test"
+        },
         "types": [
-            ["Record-Name", "Record", [], "", [
-                [1, "string_field", "String", [], ""],
-                [2, "int_field", "Integer", [], ""],
+            ["Person", "Map", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "address", "Address", [], ""],
+                [3, "house_info", "House-Info", [], ""]
+            ]],
+            ["Address", "Record", [], "", [
+                [1, "street_address", "String", [], ""],
+                [2, "city", "String", [], ""],
+                [3, "state", "String", [], ""],
+                [4, "zip_code", "Integer", ["w00000", "x99999"], ""]
+            ]],
+            ["House-Info", "Map", [], "", [
+                [1, "purchase_amount", "Integer", [], ""],
+                [2, "date_purchased", "String", ["/date"], ""]
             ]]
         ]
     }
     jadn_types = jadn_schema.get('types', {})
-    
-    nested_json = [1, "test"]
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
 
     expected_json = {
-        "string_field": "test",
-        "int_field": 1
+        "Person": {
+            "name": "Test Person",
+            "address": {
+                "street_address": "12345",
+                "city": "Columbia",
+                "state": "Maryland",
+                "zip_code": 11111
+            },
+            "house_info": {
+                "purchase_amount": 100000,
+                "date_purchased": "2023-01-01"
+            }
+        }
     }
 
-    assert compact_to_verbose(jadn_types, nested_json) == expected_json
+    nested_json = {"Person": {"name": "Test Person", "address": ["12345", "Columbia", "Maryland", 11111], "house_info": {"purchase_amount": 100000, "date_purchased": "2023-01-01"}}}
+    verbose_json = compact_to_verbose(ordered_types, nested_json, root_def)
+
+    assert verbose_json == expected_json
 
 def test_compact_to_verbose_convert():
     json_data = j_data
-    verbose_output = compact_to_verbose(j_schema.get("types", {}), json_data)
+    jadn_types = j_schema.get("types", {})
+    root_name = j_schema.get("meta", {}).get("roots", [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+    verbose_output = compact_to_verbose(ordered_types, json_data, root_def)
     write_verbose_output(verbose_output, "music-library-verbose.json")
     assert verbose_output

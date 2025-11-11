@@ -1,27 +1,5 @@
 from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def, get_parent
-from jadnutils.utils.consts import CORE_TYPES, PRIMITIVE_TYPES
-# def compact_to_verbose(jadn_types, json_obj):
-#     """
-#     Convert compact JSON object to verbose representation.
-#     Ex: [1, 2] => {"a": 1, "b": 2}
-#     """
-#     if isinstance(json_obj, list):
-#         field = get_field_from_compact_data(jadn_types, json_obj)
-#         type = get_type(field)
-#         if type == "Record":
-#             children = get_children(field)
-#             result = {}
-#             for i, child in enumerate(children):
-#                 key = child[1]
-#                 value = json_obj[i] if i < len(json_obj) else None
-#                 result[key] = compact_to_verbose(jadn_types, value)
-#             return result
-#         else:
-#             return [compact_to_verbose(jadn_types, value) for value in json_obj]
-#     elif isinstance(json_obj, dict):
-#         return {key: compact_to_verbose(jadn_types, value) for key, value in json_obj.items()}
-#     else:
-#         return json_obj
+from jadnutils.utils.consts import CORE_TYPES
 
 def compact_to_verbose(jadn_types, json_obj, type_def):
     """
@@ -32,29 +10,45 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
     if not type_def:
         return json_obj
 
-    next_type_def = jadn_types[1] if len(jadn_types) > 1 else None
-    next_jadn_types = jadn_types[1:] if len(jadn_types) > 1 else []
-
     if isinstance(json_obj, dict):
-        return {key: compact_to_verbose(next_jadn_types, value, next_type_def) for key, value in json_obj.items()}
+        result = {}
+        for idx, (field_num, field_name, field_type, _, _) in enumerate(type_def[4]):
+            field_value = json_obj.get(field_name)
+            if field_value is not None:
+                field_type_def = get_jadn_type_by_name(jadn_types, field_type)
+                verbose_value = compact_to_verbose(jadn_types, field_value, field_type_def)
+                if verbose_value is not None:
+                    result[field_name] = verbose_value
+                    
+        # Fallback for single-key dicts
+        if result == {} and json_obj:
+            key = list(json_obj.keys())[0]
+            next_type = jadn_types[1]
+            next_jadn_types = jadn_types[1:]
+            verbose_value = compact_to_verbose(next_jadn_types, json_obj[key], next_type)
+            if verbose_value is not None:
+                result[key] = verbose_value
+        return result
+
     if isinstance(json_obj, list):
         curr_type = get_type(type_def)
         if curr_type == "Record":
             children = get_children(type_def)
             result = {}
             for i, child in enumerate(children):
-                # See if parent matches
-                parent_field = get_parent(jadn_types, child)
-                if parent_field and parent_field[0] != type_def[0]:
-                    type_def = parent_field
                 key = child[1]
+                field_type = child[2]
                 value = json_obj[i] if i < len(json_obj) else None
-                result[key] = compact_to_verbose(jadn_types, value, type_def)
+                if value is not None:
+                    field_type_def = get_jadn_type_by_name(jadn_types, field_type)
+                    verbose_value = compact_to_verbose(jadn_types, value, field_type_def)
+                    if verbose_value is not None:
+                        result[key] = verbose_value
             return result
         else:
-            return [compact_to_verbose(next_jadn_types, value, next_type_def) for value in json_obj]
-    else:
-        return json_obj
+            return [compact_to_verbose(jadn_types, value, type_def) for value in json_obj if value is not None]
+
+    return json_obj
 
 def get_real_type_order(jadn_types, visited, type_def):
     """
@@ -65,22 +59,35 @@ def get_real_type_order(jadn_types, visited, type_def):
         return []
     visited.append(type_def[0])
     result = [type_def]
-    for field in get_children(type_def):
-        child_type_name = get_type(field)
-        child_type_def = get_jadn_type_by_name(jadn_types, child_type_name)
-        if child_type_def:
-            result += get_real_type_order(jadn_types, visited, child_type_def)
-    return result
 
-def make_jadn_frequency_map(jadn_types):
-    """
-    Create a frequency map of JADN types used in the schema.
-    """
-    freq_map = {}
-    for jadn_type in jadn_types:
-        type_name = jadn_type[0]
-        freq_map[type_name] = freq_map.get(type_name, 0) + 1
-    return freq_map
+    children = get_children(type_def)
+    options = get_options(type_def)
+    curr_type = get_type(type_def)
+
+    # Case: children
+    if children and len(children) > 0:
+        for field in children:
+            child_type_name = get_type(field)
+            child_type_def = get_jadn_type_by_name(jadn_types, child_type_name)
+            if child_type_def:
+                result += get_real_type_order(jadn_types, visited, child_type_def)
+    # Case: ArrayOf
+    elif curr_type == "ArrayOf" and len(options) > 0:
+        array_of_type_name = options[0].lstrip('*')
+        array_of_type_def = get_jadn_type_by_name(jadn_types, array_of_type_name)
+        if array_of_type_def:
+            result += get_real_type_order(jadn_types, visited, array_of_type_def)
+    # Case: MapOf
+    elif curr_type == "MapOf" and len(options) > 1:
+        key_name = options[0].lstrip('+')
+        value_name = options[1].lstrip('*')
+        key_type_def = get_jadn_type_by_name(jadn_types, key_name)
+        value_type_def = get_jadn_type_by_name(jadn_types, value_name)
+        if key_type_def:
+            result += get_real_type_order(jadn_types, visited, key_type_def)
+        if value_type_def:
+            result += get_real_type_order(jadn_types, visited, value_type_def)
+    return result
 
 def get_jadn_type_by_name(jadn_types, name):
     """
@@ -135,13 +142,16 @@ def get_python_type(jadn_types, field):
     type_mapping = {
         "String": str,
         "Integer": int,
-        "Float": float,
+        "Number": float,
         "Boolean": bool,
-        "Record": dict,
+        "Binary": bytes,
+        "Record": list, # Compact changes records to lists
         "Enumerated": str,
         "Choice": dict,
         "Map": dict,
         "Array": list,
+        "MapOf": dict,
+        "ArrayOf": list,
     }
 
     true_type = get_type(field)
