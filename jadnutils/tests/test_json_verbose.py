@@ -2,7 +2,8 @@ import os
 import sys
 import json
 
-from jadnutils.utils.rev_conversion_utils import compact_to_verbose
+from jadnutils.utils.rev_conversion_utils import compact_to_verbose, get_real_type_order
+from jadnutils.utils.rev_conversion_utils import get_jadn_type_by_name
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
 from music_lib_compact_data import j_data
 from music_lib import j_schema
@@ -21,8 +22,41 @@ def write_verbose_output(verbose_output, filename):
         f.write(json.dumps(verbose_output))
     print(verbose_output)
 
+def test_get_real_type_order():
+    jadn_schema = {
+        "meta": {"roots": ["TypeB"]},
+        "types": [
+            ["TypeA", "Record", [], "", [
+                [1, "field1", "TypeC", [], ""]
+            ]],
+            ["TypeB", "Record", [], "", [
+                [1, "subfield1", "TypeA", [], ""],
+            ]],
+            ["TypeC", "Map", [], "", [
+                [1, "mapfield1", "String", [], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    
+    expected_order = [
+        ["TypeB", "Record", [], "", [
+            [1, "subfield1", "TypeA", [], ""],
+        ]],
+        ["TypeA", "Record", [], "", [
+            [1, "field1", "TypeC", [], ""]
+        ]],
+        ["TypeC", "Map", [], "", [
+            [1, "mapfield1", "String", [], ""]
+        ]]
+    ]
+    assert get_real_type_order(jadn_types, [], root_def) == expected_order
+
 def test_compact_to_verbose():
     jadn_schema = {
+        "meta": {"roots": ["Record-Name"]},
         "types": [
             ["Record-Name", "Record", [], "", [
                 [1, "string_field", "String", [], ""],
@@ -31,6 +65,9 @@ def test_compact_to_verbose():
         ]
     }
     jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
     
     nested_json = ["test", 1]
 
@@ -39,10 +76,11 @@ def test_compact_to_verbose():
         "int_field": 1
     }
 
-    assert compact_to_verbose(jadn_types, nested_json) == expected_json
+    assert compact_to_verbose(ordered_types, nested_json, root_def) == expected_json
 
 def test_compact_to_verbose_complex():
     jadn_schema = {
+        "meta": {"roots": ["Map-Name"]},
         "types": [
             ["Map-Name", "Map", [], "", [
                 [1, "key_field", "String", [], ""],
@@ -55,6 +93,9 @@ def test_compact_to_verbose_complex():
         ]
     }
     jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
 
     nested_json = {
         "key_field": "test",
@@ -69,10 +110,11 @@ def test_compact_to_verbose_complex():
         }
     }
 
-    assert compact_to_verbose(jadn_types, nested_json) == expected_json
+    assert compact_to_verbose(ordered_types, nested_json, root_def) == expected_json
 
 def test_compact_to_verbose_dupe_children():
     jadn_schema = {
+        "meta": {"roots": ["Map-Name"]},
         "types": [
             ["Map-Name", "Map", [], "", [
                 [1, "key_field", "String", [], ""],
@@ -90,6 +132,9 @@ def test_compact_to_verbose_dupe_children():
         ]
     }
     jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
 
     nested_json = {
         "key_field": "test",
@@ -109,7 +154,7 @@ def test_compact_to_verbose_dupe_children():
         }
     }
 
-    assert compact_to_verbose(jadn_types, nested_json) == expected_json
+    assert compact_to_verbose(ordered_types, nested_json, root_def) == expected_json
 
 def test_compact_to_verbose_reverse():
     jadn_schema = {
