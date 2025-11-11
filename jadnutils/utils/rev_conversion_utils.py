@@ -12,6 +12,17 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
 
     if isinstance(json_obj, dict):
         result = {}
+
+        # Handle enumerated fields 
+        curr_type = get_type(type_def)
+        if curr_type == "Enumerated":
+            for key, value in json_obj.items():
+                field_type_def = get_jadn_type_by_name(jadn_types, curr_type)
+                verbose_value = compact_to_verbose(jadn_types, value, field_type_def)
+                if verbose_value is not None:
+                    result[key] = verbose_value
+            return result
+        
         for idx, (field_num, field_name, field_type, _, _) in enumerate(type_def[4]):
             field_value = json_obj.get(field_name)
             if field_value is not None:
@@ -134,39 +145,6 @@ def get_jadn_type_by_name(jadn_types, name):
             return jadn_type
 
     return None
-
-def get_field_from_compact_data(jadn_types, data):
-    """
-    Helper function to get the field definition from compact data.
-    """
-    for field in jadn_types:
-        type = get_type(field)
-        if type == "Record":
-            children = get_children(field)
-            if valid_children_length(children, data): # Need length checker with optional consideration
-                # Check if types of children match data
-                match = True
-                for i, child in enumerate(children):
-                    child_type = get_type(child)
-                    if not isinstance(data[i], get_python_type(jadn_types, child)):
-                        match = False
-                        break
-                if match:
-                    return field
-    return None
-
-def valid_children_length(children_array, data_array):
-    """
-    Check if the lengths of the children array and data array are equal,
-    considering optional fields.
-    """
-    if not children_array or not data_array:
-        return False
-    
-    children_required_count = len([child for child in children_array if '[0' not in get_options(child)])
-    data_count = len(data_array)
-
-    return children_required_count <= data_count
 
 def get_python_type(jadn_types, field):
     """

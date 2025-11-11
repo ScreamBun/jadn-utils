@@ -297,3 +297,80 @@ def test_arrayof():
     }
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json
+
+def test_choice_enumerated():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Choice-Name"]
+    },
+    "types": [
+        ["Choice-Name", "Choice", [], "", [
+            [1, "field_value_1", "Enumerated-Name", [], ""],
+            [2, "field_value_2", "Enumerated-Name-1", [], ""]
+        ]],
+        ["Enumerated-Name", "Enumerated", [], "", [
+            [1, "choice_a", ""],
+            [2, "choice_b", ""]
+        ]],
+        ["Enumerated-Name-1", "Enumerated", [], "", [
+            [1, "choice_c", ""],
+            [2, "choice_d", ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    compact_json = {
+    "Choice-Name": {
+        "field_value_1": "choice_b"
+    }
+    }
+
+    expected_json = {
+    "Choice-Name": {
+        "field_value_1": "choice_b"
+    }
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json
+
+def test_enum_derived():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Map-Name"],
+        "package": "https://www.test"
+    },
+    "types": [
+        ["Map-Name", "Map", [], "", [
+            [1, "field_value_1", "Enumerated-Name", [], ""],
+            [2, "field_value_2", "Enumerated-Name-1", [], ""]
+        ]],
+        ["Enumerated-Name", "Enumerated", [], "", [
+            [1, "selection_1", ""]
+        ]],
+        ["Enumerated-Name-1", "Enumerated", ["#Enumerated-Name"], "", []]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    compact_json = {
+    "Map-Name": {
+        "field_value_1": "selection_1",
+        "field_value_2": "selection_1"
+    }
+    }
+
+    expected_json = {
+    "Map-Name": {
+        "field_value_1": "selection_1",
+        "field_value_2": "selection_1"
+    }
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json
