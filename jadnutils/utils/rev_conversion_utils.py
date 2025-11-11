@@ -20,12 +20,20 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                 if verbose_value is not None:
                     result[field_name] = verbose_value
                     
-        # Fallback for single-key dicts
         if result == {} and json_obj:
             key = list(json_obj.keys())[0]
             next_type = jadn_types[1]
             next_jadn_types = jadn_types[1:]
-            verbose_value = compact_to_verbose(next_jadn_types, json_obj[key], next_type)
+
+            # Determine if current type def should be kept. If current type_def children match json_obj keys, keep type
+            curr_keys = set(json_obj[key].keys()) if isinstance(json_obj[key], dict) else json_obj[key]
+            expected_keys = set(child[1] for child in get_children(type_def))
+            keep_type = curr_keys == expected_keys
+
+            if keep_type:
+                verbose_value = compact_to_verbose(jadn_types, json_obj[key], type_def)
+            else:
+                verbose_value = compact_to_verbose(next_jadn_types, json_obj[key], next_type)
             if verbose_value is not None:
                 result[key] = verbose_value
         return result
@@ -46,7 +54,17 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                         result[key] = verbose_value
             return result
         else:
-            return [compact_to_verbose(jadn_types, value, type_def) for value in json_obj if value is not None]
+            # Determine if current type def should be kept. If current type_def children match json_obj keys, keep type
+            curr_keys = json_obj
+            expected_keys = list(child[1] for child in get_children(type_def))
+            keep_type = curr_keys == expected_keys
+
+            if keep_type:
+                return [compact_to_verbose(jadn_types, value, type_def) for value in json_obj if value is not None]
+            else:
+                next_type = jadn_types[1]
+                next_jadn_types = jadn_types[1:]
+                return [compact_to_verbose(next_jadn_types, value, next_type) for value in json_obj if value is not None]
 
     return json_obj
 
@@ -55,7 +73,7 @@ def get_real_type_order(jadn_types, visited, type_def):
     Returns a flat list of type definitions in the order they are encountered,
     starting from the root type.
     """
-    if type_def[0] in visited:
+    if not type_def or type_def[0] in visited:
         return []
     visited.append(type_def[0])
     result = [type_def]

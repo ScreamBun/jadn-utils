@@ -7,6 +7,7 @@ from jadnutils.utils.rev_conversion_utils import get_jadn_type_by_name
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
 from music_lib_compact_data import j_data
 from music_lib import j_schema
+from music_lib_data import j_data as verbose_j_data
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
 
@@ -206,7 +207,50 @@ def test_compact_to_verbose_4():
 
     assert verbose_json == expected_json
 
-def test_compact_to_verbose_convert():
+def test_compact_to_verbose_5():
+    jadn_schema = {
+        "meta": {
+            "roots": ["States"],
+            "package": "https://www.test"
+        },
+        "types": [
+            ["States", "Array", [], "", [
+                [1, "state", "State", [], ""],
+                [2, "state2", "State", [], ""]
+            ]],
+            ["State", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "state", "String", [], ""],
+                [3, "latitude", "String", [], ""],
+                [4, "longitude", "String", [], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    expected_json = [
+        {
+            "name": "St. Louis",
+            "state": "Missouri",
+            "latitude": "38.627003",
+            "longitude": "-90.199402"
+        },
+        {
+            "name": "Seattle",
+            "state": "Washington",
+            "latitude": "47.60621",
+            "longitude": "-122.33207"
+        }
+    ]
+
+    nested_json = [["St. Louis", "Missouri", "38.627003", "-90.199402"],["Seattle", "Washington", "47.60621", "-122.33207"]]
+
+    assert compact_to_verbose(ordered_types, nested_json, root_def) == expected_json
+
+def test_compact_music_lib_to_verbose():
     json_data = j_data
     jadn_types = j_schema.get("types", {})
     root_name = j_schema.get("meta", {}).get("roots", [None])[0]
@@ -214,4 +258,4 @@ def test_compact_to_verbose_convert():
     ordered_types = get_real_type_order(jadn_types, [], root_def)
     verbose_output = compact_to_verbose(ordered_types, json_data, root_def)
     write_verbose_output(verbose_output, "music-library-verbose.json")
-    assert verbose_output
+    assert verbose_output == verbose_j_data
