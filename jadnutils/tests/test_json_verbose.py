@@ -259,3 +259,41 @@ def test_compact_music_lib_to_verbose():
     verbose_output = compact_to_verbose(ordered_types, json_data, root_def)
     write_verbose_output(verbose_output, "music-library-verbose.json")
     assert verbose_output == verbose_j_data
+
+# Sandbox generated data
+def test_arrayof():
+    jadn_schema = {
+    "meta": {
+        "roots": ["ArrayOf-Name"]
+    },
+    "types": [
+        ["ArrayOf-Name", "ArrayOf", ["*Record-Name"], "", []],
+        ["Record-Name", "Record", [], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    compact_json = {
+    "ArrayOf-Name": [
+        ["1", "2"],
+        ["3", "4"]
+    ]
+    }
+
+    expected_json = {
+    "ArrayOf-Name": [{
+        "field_value_1": "1",
+        "field_value_2": "2"
+        }, {
+        "field_value_1": "3",
+        "field_value_2": "4"
+        }]
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json

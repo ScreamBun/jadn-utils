@@ -30,6 +30,21 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
             expected_keys = set(child[1] for child in get_children(type_def))
             keep_type = curr_keys == expected_keys
 
+            # Handle ArrayOf
+            curr_type = get_type(type_def)
+            if curr_type == "ArrayOf":
+                verbose_value = []
+                instances = json_obj[key]
+                for inst in instances:
+                    curr_options = get_options(type_def)
+                    val_type = next((opt for opt in curr_options if opt.startswith("*")), None)
+                    val_type_def = get_jadn_type_by_name(jadn_types, val_type.lstrip('*'))
+                    item = compact_to_verbose(jadn_types, inst, val_type_def)
+                    if item is not None:
+                        verbose_value.append(item)
+                result[key] = verbose_value
+                return result
+
             if keep_type:
                 verbose_value = compact_to_verbose(jadn_types, json_obj[key], type_def)
             else:
