@@ -1,4 +1,4 @@
-from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def, get_parent, get_inherited_fields
+from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def, get_parent, get_inherited_fields, get_key_from_link, has_key_link
 from jadnutils.utils.consts import CORE_TYPES, PRIMITIVE_TYPES, STRUCTURED_TYPES
 
 def compact_to_verbose(jadn_types, json_obj, type_def):
@@ -21,6 +21,14 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
         else:
             type_def[4] = inherited_fields
 
+    # Handle key link
+    if has_key_link(type_def):
+        if len(type_def) > 4 and isinstance(type_def[4], list):
+            for idx, field in enumerate(type_def[4]):
+                field_opts = get_options(field)
+                if field_opts and any(opt for opt in field_opts if opt == "L"):
+                    type_def[4][idx] = get_key_from_link(jadn_types, field)
+
     if isinstance(json_obj, dict):
         result = {}
 
@@ -39,8 +47,7 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
         
         try:
             # Make sure type_def[4] exists
-            if len(type_def) < 5:
-                type_def.append([])
+            type_def[4] = reconcile_children(type_def)[4]
             for idx, (field_num, field_name, field_type, _, _) in enumerate(type_def[4]):
                 field_value = json_obj.get(field_name)
                 if field_value is not None:
@@ -151,6 +158,38 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                 return [compact_to_verbose(next_jadn_types, value, next_type) for value in json_obj if value is not None]
 
     return json_obj
+
+def reconcile_children(type_def):
+    """
+    Reconcile type definition children to ensure it has all necessary components.
+    """
+    if not type_def:
+        raise ValueError("Type definition is None or empty.")
+
+    if len(type_def) < 5:
+        type_def.append([])
+
+    try:
+        for idx, child in enumerate(type_def[4]):
+            type_def[4][idx] = reconcile_field_def(child)
+    except Exception as e:
+        raise ValueError(f"Error reconciling children for type definition {type_def}. {e}")
+
+    return type_def
+
+def reconcile_field_def(field_def):
+    """
+    Reconcile field definition to ensure it has all necessary components.
+    """
+    if not field_def:
+        raise ValueError("Field definition is None or empty.")
+
+    if len(field_def) < 4:
+        field_def.append([])
+    if len(field_def) < 5:
+        field_def.append("")
+
+    return field_def
 
 def valid_children_length(jadn_types, type_def, json_obj):
     """

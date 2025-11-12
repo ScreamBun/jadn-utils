@@ -128,6 +128,45 @@ def get_inherited_fields(jadn_types, j_type, j_fields):
         dedup[f[0]] = f
     return sorted(list(dedup.values()), key=lambda x: x[0])
 
+def get_key_from_link(jadn_types, link_field):
+    """
+    Retrive the key field def given its parent
+    """
+    if not jadn_types or not link_field:
+        raise ValueError("Error during key/link processing. One or more args is None.")
+    
+    parent = get_type(link_field)
+    parent_type_def = get_type_by_name(jadn_types, parent)
+    fields = get_children(parent_type_def) or []
+    for field in fields:
+        options = get_options(field)
+        if options and any(opt for opt in options if opt == "K"):
+            new_opts = [opt for opt in get_options(link_field) if opt != "K"]
+            link_field[3] = new_opts
+            link_field[2] = get_type(field)
+            return link_field
+    return link_field
+
+def has_key_link(type_def):
+    """
+    Determine if a type definition has a key/link field
+    """
+    if not type_def:
+        raise ValueError("Error during key/link processing. Type definition is None.")
+    
+    children = get_children(type_def)
+    hasKey = False
+    hasLink = False
+    for field in children:
+        options = get_options(field)
+        if options and any(opt for opt in options if opt == "K"):
+            hasKey = True
+        if options and any(opt for opt in options if opt == "L"):
+            hasLink = True
+    if hasKey and hasLink:
+        return True
+    return False
+
 def get_field_by_data(jadn_types, data):
     """
     Retrive a field definition by its data from jadn_types

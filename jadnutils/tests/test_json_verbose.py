@@ -526,6 +526,53 @@ def test_inheritance_complex():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
+def test_key_link():
+    jadn_schema = {
+    "meta": {
+        "title": "JADN Schema Start Up Template",
+        "package": "http://JADN-Schema-Start-Up-Template-URI",
+        "roots": ["Person", "Organization"]
+    },
+    "types": [
+        ["Person", "Record", [], "", [
+            [1, "id", "Integer", ["K"], ""],
+            [2, "name", "String"],
+            [3, "mother", "Person", ["L"]],
+            [4, "father", "Person", ["L"]],
+            [5, "siblings", "Person", ["L", "[0", "]-2"]],
+            [6, "employer", "Organization", ["L", "[0"], ""]
+        ]],
+        ["Organization", "Record", [], "", [
+            [1, "name", "String"],
+            [2, "weird_key", "Comp-Key", ["K"], ""],
+            [3, "ceo", "Person", ["L"]]
+        ]],
+        ["Comp-Key", "Array", [], "", [
+            [1, "alphabetical_part", "String", ["{2", "}2"]],
+            [2, "numeric", "Integer", ["w3", "x3"], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "Person": {
+        "id": 5,
+        "name": "Name",
+        "mother": 1,
+        "father": 1,
+        "siblings": [1],
+        "employer": ["aa", 3]
+    }
+    }
+
+    compact_json = {"Person": [5, "Name", 1, 1, [1], ["aa", 3]]}
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
 ########## TEST EXAMPLE SCHEMAS
 def test_schema_classes():
     json_data_compact = schema_classes_compact_j_data
