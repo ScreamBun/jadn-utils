@@ -1,4 +1,4 @@
-from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def, get_parent
+from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def, get_parent, get_inherited_fields
 from jadnutils.utils.consts import CORE_TYPES, PRIMITIVE_TYPES, STRUCTURED_TYPES
 
 def compact_to_verbose(jadn_types, json_obj, type_def):
@@ -9,6 +9,17 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
 
     if not type_def:
         return json_obj
+
+    # Handle inherited fields at top level
+    options = get_options(type_def)
+    has_inherited_fields = True if options and any(opt for opt in options if opt.startswith('e') or opt.startswith('r')) else False
+    if has_inherited_fields:
+        existing_children = get_children(type_def)
+        inherited_fields = get_inherited_fields(jadn_types, type_def, existing_children)
+        if len(type_def) < 5:
+            type_def.append(inherited_fields)
+        else:
+            type_def[4] = inherited_fields
 
     if isinstance(json_obj, dict):
         result = {}
@@ -41,11 +52,11 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
             raise ValueError(f"Type Definition {type_def} has insufficient fields to enumerate. {e}")
                     
         if result == {} and json_obj:
-            key = list(json_obj.keys())[0]
-            next_type = jadn_types[1]
-            next_jadn_types = jadn_types[1:]
-
             try:
+                key = list(json_obj.keys())[0]
+                next_type = jadn_types[1] if len(jadn_types) > 1 else type_def
+                next_jadn_types = jadn_types[1:] if len(jadn_types) > 1 else jadn_types
+
                 # Determine if current type def should be kept. If current type_def children match json_obj keys, keep type
                 curr_keys = set(json_obj[key].keys()) if isinstance(json_obj[key], dict) else json_obj[key]
                 expected_keys = set(child[1] for child in get_children(type_def))
@@ -59,19 +70,22 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
             keep_type = (curr_keys == expected_keys) or (curr_key_keys == expected_keys and curr_key_keys != set() and expected_keys != set())
 
             # Handle ArrayOf
-            curr_type = get_type(type_def)
-            if curr_type == "ArrayOf":
-                verbose_value = []
-                instances = json_obj[key]
-                for inst in instances:
-                    curr_options = get_options(type_def)
-                    val_type = next((opt for opt in curr_options if opt.startswith("*")), None)
-                    val_type_def = get_jadn_type_by_name(jadn_types, val_type.lstrip('*'))
-                    item = compact_to_verbose(jadn_types, inst, val_type_def)
-                    if item is not None:
-                        verbose_value.append(item)
-                result[key] = verbose_value
-                return result
+            try:
+                curr_type = get_type(type_def)
+                if curr_type == "ArrayOf":
+                    verbose_value = []
+                    instances = json_obj[key]
+                    for inst in instances:
+                        curr_options = get_options(type_def)
+                        val_type = next((opt for opt in curr_options if opt.startswith("*")), None)
+                        val_type_def = get_jadn_type_by_name(jadn_types, val_type.lstrip('*'))
+                        item = compact_to_verbose(jadn_types, inst, val_type_def)
+                        if item is not None:
+                            verbose_value.append(item)
+                    result[key] = verbose_value
+                    return result
+            except Exception as e:
+                raise ValueError(f"Error processing ArrayOf type for type definition {type_def}. {e}")
 
             if keep_type:
                 verbose_value = compact_to_verbose(jadn_types, json_obj[key], type_def)
@@ -145,23 +159,26 @@ def valid_children_length(jadn_types, type_def, json_obj):
     if not type_def or not json_obj:
         return False
     
-    true_type_def = get_true_type_def(jadn_types, type_def)
-    true_type_type = get_type(true_type_def)
+    try:
+        true_type_def = get_true_type_def(jadn_types, type_def)
+        true_type_type = get_type(true_type_def)
 
-    keys = json_obj.keys() if isinstance(json_obj, dict) else json_obj if isinstance(json_obj, list) else [json_obj]
+        keys = json_obj.keys() if isinstance(json_obj, dict) else json_obj if isinstance(json_obj, list) else [json_obj]
 
-    # Handle ArrayOf
-    if true_type_type == "ArrayOf":
-        true_type_type = get_options(true_type_def)[0].lstrip('*')
-        if true_type_type and true_type_type in PRIMITIVE_TYPES and len(keys) > 1:
-            # if key type is a primitive and more than 1 key is given, return False. Not the type
-            return False
-    
-    true_type_children = get_children(true_type_def) if true_type_type in STRUCTURED_TYPES else [] # Enum and Choice children should not all be counted
-    required_children = [child for child in true_type_children if '[0' not in get_options(child)]
+        # Handle ArrayOf
+        if true_type_type == "ArrayOf":
+            true_type_type = get_options(true_type_def)[0].lstrip('*')
+            if true_type_type and len(keys) > 1:
+                # if key instances are not all of key type that type, not correct type
+                return all(isinstance(k, get_python_type(jadn_types, type_def, direct_type=true_type_type)) for k in keys)
+        
+        true_type_children = get_children(true_type_def) if true_type_type in STRUCTURED_TYPES else [] # Enum and Choice children should not all be counted
+        required_children = [child for child in true_type_children if '[0' not in get_options(child)]
 
-    req_len = len(required_children)
-    keys_len = len(keys)
+        req_len = len(required_children)
+        keys_len = len(keys)
+    except Exception as e:
+        raise ValueError(f"Error comparing children for type definition {type_def} and {json_obj}. {e}")
 
     return req_len <= keys_len
 
@@ -170,39 +187,50 @@ def get_real_type_order(jadn_types, visited, type_def):
     Returns a flat list of type definitions in the order they are encountered,
     starting from the root type.
     """
-    if not type_def or type_def[0] in visited:
-        return []
-    visited.append(type_def[0])
-    result = [type_def]
+    try:
+        if not type_def or type_def[0] in visited:
+            return []
+        visited.append(type_def[0])
+        result = [type_def]
 
-    children = get_children(type_def)
-    options = get_options(type_def)
-    curr_type = get_type(type_def)
+        children = get_children(type_def)
+        options = get_options(type_def)
+        curr_type = get_type(type_def)
 
-    # Case: children
-    if children and len(children) > 0:
-        for field in children:
-            child_type_name = get_type(field)
-            child_type_def = get_jadn_type_by_name(jadn_types, child_type_name)
-            if child_type_def:
-                result += get_real_type_order(jadn_types, visited, child_type_def)
-    # Case: ArrayOf
-    elif curr_type == "ArrayOf" and len(options) > 0:
-        array_of_type_name = options[0].lstrip('*')
-        array_of_type_def = get_jadn_type_by_name(jadn_types, array_of_type_name)
-        if array_of_type_def:
-            result += get_real_type_order(jadn_types, visited, array_of_type_def)
-    # Case: MapOf
-    elif curr_type == "MapOf" and len(options) > 1:
-        key_name = options[0].lstrip('+')
-        value_name = options[1].lstrip('*')
-        key_type_def = get_jadn_type_by_name(jadn_types, key_name)
-        value_type_def = get_jadn_type_by_name(jadn_types, value_name)
-        if key_type_def:
-            result += get_real_type_order(jadn_types, visited, key_type_def)
-        if value_type_def:
-            result += get_real_type_order(jadn_types, visited, value_type_def)
-    return result
+        # Case: children
+        if children and len(children) > 0:
+            for field in children:
+                child_type_name = get_type(field)
+                child_type_def = get_jadn_type_by_name(jadn_types, child_type_name)
+                if child_type_def:
+                    result += get_real_type_order(jadn_types, visited, child_type_def)
+        # Case: ArrayOf
+        elif curr_type == "ArrayOf" and len(options) > 0:
+            array_of_type_name = options[0].lstrip('*')
+            array_of_type_def = get_jadn_type_by_name(jadn_types, array_of_type_name)
+            if array_of_type_def:
+                result += get_real_type_order(jadn_types, visited, array_of_type_def)
+        # Case: MapOf
+        elif curr_type == "MapOf" and len(options) > 1:
+            key_name = options[0].lstrip('+')
+            value_name = options[1].lstrip('*')
+            key_type_def = get_jadn_type_by_name(jadn_types, key_name)
+            value_type_def = get_jadn_type_by_name(jadn_types, value_name)
+            if key_type_def:
+                result += get_real_type_order(jadn_types, visited, key_type_def)
+            if value_type_def:
+                result += get_real_type_order(jadn_types, visited, value_type_def)
+        
+        # Case: Inheritance
+        parent = [opt for opt in options if opt.startswith('e') or opt.startswith('r')]
+        if len(parent) > 0:
+            parent_name = parent[0][1:] if parent else None
+            parent_type_def = get_jadn_type_by_name(jadn_types, parent_name)
+            if parent_type_def:
+                result += get_real_type_order(jadn_types, visited, parent_type_def)
+        return result
+    except Exception as e:
+        raise ValueError(f"Error determining real type order for type definition {type_def}. {e}")
 
 def get_jadn_type_by_name(jadn_types, name):
     """
@@ -217,7 +245,7 @@ def get_jadn_type_by_name(jadn_types, name):
 
     return None
 
-def get_python_type(jadn_types, field, id = False):
+def get_python_type(jadn_types, field, id = False, direct_type = None):
     """
     Map JADN types to Python types.
     """
@@ -235,6 +263,10 @@ def get_python_type(jadn_types, field, id = False):
         "MapOf": dict,
         "ArrayOf": list,
     }
+
+    # Skip all the logic, just want to get the python equivalent of a JADN Type
+    if direct_type:
+        return type_mapping.get(direct_type, object)
 
     true_type = get_type(field)
     if true_type not in type_mapping:
@@ -260,4 +292,7 @@ def get_python_type(jadn_types, field, id = False):
                     jadn_types.append([field[1], "ArrayOf", ['*' + true_type], "", []])
                     return list
 
-    return type_mapping.get(true_type, object)
+    try:
+        return type_mapping.get(true_type, object)
+    except Exception as e:
+        raise ValueError(f"Error determining Python type for field {field}. {e}")

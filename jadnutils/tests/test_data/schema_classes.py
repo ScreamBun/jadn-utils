@@ -69,7 +69,7 @@ j_schema = {
         [10, "academic_standing", "Academic-Standing", ["[0"], ""],
         [11, "advisor_name", "String", ["[0"], "Academic advisor"],
         [12, "graduation_date", "String", ["/date", "[0"], "Expected graduation date"],
-        [13, "student_token", "Binary", [], "To show binary viewer"],
+        [13, "student_token", "Binary", ["[0"], "To show binary viewer"],
         [14, "class_selections", "Semester-Classes", [], ""]
       ]]
   ]

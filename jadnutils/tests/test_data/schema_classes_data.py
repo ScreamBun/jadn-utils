@@ -2,7 +2,6 @@ j_data = {
   "Student-Info": {
     "full_name": "Joshua Cohen",
     "uid": "117797466",
-    "student_token": "ABCD",
     "class_selections": [{
         "class": 131,
         "start_date": "2025-11-12",
