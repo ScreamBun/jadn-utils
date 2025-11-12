@@ -399,6 +399,18 @@ def get_python_type(jadn_types, field, id = False, direct_type = None, value = N
                 new_type = get_type(child)
                 return type_mapping.get(new_type, object)
 
+    # Handle tagID choices
+    if value and true_type == "Choice":
+        merged_opts = options + true_options
+        tagid_opt = next((opt for opt in merged_opts if opt.startswith('&')), None)
+        if tagid_opt:
+            tagid = tagid_opt.lstrip('&')
+            if tagid.isdigit():
+                tagid = int(tagid)
+            else:
+                raise ValueError(f"Invalid tag ID option '{tagid}' in field {field}.")
+            return type(value)
+
     try:
         return type_mapping.get(true_type, object)
     except Exception as e:

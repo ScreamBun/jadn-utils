@@ -756,6 +756,57 @@ def test_key_link():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
+def test_tag_id():
+    jadn_schema = {
+    "meta": {
+        "package": "https://www.tagid.com",
+        "title": "TagID Test",
+        "roots": ["Root-Test"]
+    },
+    "types": [
+        ["Root-Test", "Record", ["q"], "", [
+            [1, "type_name", "String", [], ""],
+            [2, "selected_type", "Selected-Type", [], ""],
+            [3, "fields", "JADN-Type", ["&2"], ""]
+        ]],
+        ["Selected-Type", "Enumerated", ["#JADN-Type"], "", [
+            [1, "string", "Array-Empty", [], ""],
+            [2, "record", "Array-Fields", [], ""],
+            [3, "enum", "Array-Items", [], ""]
+        ]],
+        ["JADN-Type", "Choice", [], "", [
+            [1, "string", "Array-Empty", [], ""],
+            [2, "record", "Array-Fields", [], ""],
+            [3, "enum", "Array-Items", [], ""]
+        ]],
+        ["Array-Items", "Array", [], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]],
+        ["Array-Fields", "Array", [], "", [
+            [1, "field_value_a", "String", [], ""],
+            [2, "field_value_b", "String", [], ""]
+        ]],
+        ["Array-Empty", "Array", [], "", []]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "Root-Test": {
+        "type_name": "Type-Name",
+        "selected_type": "record",
+        "fields": ["a", "b"]
+    }
+    }
+
+    compact_json = {"Root-Test": ["Type-Name", "record", ["a", "b"]]}
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
 ########## TEST EXAMPLE SCHEMAS
 def test_schema_classes():
     json_data_compact = schema_classes_compact_j_data
