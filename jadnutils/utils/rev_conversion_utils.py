@@ -118,14 +118,24 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
 
                     verbose_value = {} if true_key_type == "String" else []
                     if isinstance(verbose_value, dict):
-                        for k, v in json_obj[key].items():
-                            comp_key = compact_to_verbose(jadn_types, k, key_type_def)
-                            comp_value = compact_to_verbose(jadn_types, v, value_type_def)
-                            if true_key_type == "String":
-                                verbose_value[comp_key] = comp_value
-                            else:
-                                verbose_value.append({comp_key: comp_value})
-                        result[key] = verbose_value
+                        if not isinstance(json_obj[key], dict):
+                            for k, v in json_obj.items():
+                                comp_key = compact_to_verbose(jadn_types, k, key_type_def)
+                                comp_value = compact_to_verbose(jadn_types, v, value_type_def)
+                                if true_key_type == "String":
+                                    verbose_value[comp_key] = comp_value
+                                else:
+                                    verbose_value.append({comp_key: comp_value})
+                                result.update(verbose_value)
+                        else:
+                            for k, v in json_obj[key].items():
+                                comp_key = compact_to_verbose(jadn_types, k, key_type_def)
+                                comp_value = compact_to_verbose(jadn_types, v, value_type_def)
+                                if true_key_type == "String":
+                                    verbose_value[comp_key] = comp_value
+                                else:
+                                    verbose_value.append({comp_key: comp_value})
+                                result[key] = verbose_value
                     else:
                         for idx, item in enumerate(json_obj[key]):
                             if (idx % 2) == 0: #Even index starts at 0, keys
