@@ -1,4 +1,5 @@
-from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def, get_parent, get_inherited_fields, get_key_from_link, has_key_link
+from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def,\
+     get_parent, get_inherited_fields, get_key_from_link, has_key_link, handle_mapof_enum_key
 from jadnutils.utils.consts import CORE_TYPES, PRIMITIVE_TYPES, STRUCTURED_TYPES
 
 def compact_to_verbose(jadn_types, json_obj, type_def):
@@ -75,10 +76,10 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                 raise ValueError(f"Error determining keys for type definition {type_def}. {e}")
 
             keep_type = (curr_keys == expected_keys) or (curr_key_keys == expected_keys and curr_key_keys != set() and expected_keys != set())
+            curr_type = get_type(type_def)
 
             # Handle ArrayOf
             try:
-                curr_type = get_type(type_def)
                 if curr_type == "ArrayOf":
                     verbose_value = []
                     instances = json_obj[key]
@@ -93,6 +94,50 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                     return result
             except Exception as e:
                 raise ValueError(f"Error processing ArrayOf type for type definition {type_def}. {e}")
+
+            # Handle MapOf
+            try:
+                if curr_type == "MapOf":
+                    key_type = next((opt for opt in options if opt.startswith("+")), None)
+                    key_type_def = get_jadn_type_by_name(jadn_types, key_type.lstrip('+'))
+                    value_type = next((opt for opt in options if opt.startswith("*")), None)
+                    value_type_def = get_jadn_type_by_name(jadn_types, value_type.lstrip('*'))
+
+                    true_key_type = get_type(get_true_type_def(jadn_types, key_type_def)) if key_type_def else key_type.lstrip('+')
+
+                    # handle mapof with enum key type
+                    if true_key_type == "Enumerated":
+                        map_field = handle_mapof_enum_key(jadn_types, type_def, key_type_def, value_type)
+                        type_def = map_field
+                        # Replace type def in jadn_types
+                        for idx, tdef in enumerate(jadn_types):
+                            if tdef[0] == type_def[0]:
+                                jadn_types[idx] = type_def
+                                break
+                        return compact_to_verbose(jadn_types, json_obj, type_def)
+
+                    verbose_value = {} if true_key_type == "String" else []
+                    if isinstance(verbose_value, dict):
+                        for k, v in json_obj[key].items():
+                            comp_key = compact_to_verbose(jadn_types, k, key_type_def)
+                            comp_value = compact_to_verbose(jadn_types, v, value_type_def)
+                            if true_key_type == "String":
+                                verbose_value[comp_key] = comp_value
+                            else:
+                                verbose_value.append({comp_key: comp_value})
+                        result[key] = verbose_value
+                    else:
+                        for idx, item in enumerate(json_obj[key]):
+                            if (idx % 2) == 0: #Even index starts at 0, keys
+                                comp_key = compact_to_verbose(jadn_types, item, key_type_def)
+                                verbose_value.append(comp_key)
+                            else: # Odd index, values
+                                comp_value = compact_to_verbose(jadn_types, item, value_type_def)
+                                verbose_value.append(comp_value)
+                        result[key] = verbose_value
+                    return result
+            except Exception as e:
+                raise ValueError(f"Error processing MapOf type for type definition {type_def}. {e}")
 
             if keep_type:
                 verbose_value = compact_to_verbose(jadn_types, json_obj[key], type_def)
@@ -124,7 +169,7 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                     if new_type and get_type(new_type) == "ArrayOf":
                         child = new_type
                         field_type = "ArrayOf"
-                    if valid_children_length(jadn_types, child, value): #valid_children_length(jadn_types, type_def, json_obj):
+                    if valid_children_length(jadn_types, child, value):
                         idx += 1
                         field_type_def = get_jadn_type_by_name(jadn_types, field_type)
                         field_type_def = get_jadn_type_by_name(jadn_types, key) if not field_type_def else field_type_def # use key if field_type not found
@@ -251,8 +296,8 @@ def get_real_type_order(jadn_types, visited, type_def):
                 result += get_real_type_order(jadn_types, visited, array_of_type_def)
         # Case: MapOf
         elif curr_type == "MapOf" and len(options) > 1:
-            key_name = options[0].lstrip('+')
-            value_name = options[1].lstrip('*')
+            key_name = next(opt for opt in options if opt.startswith('+')).lstrip('+')
+            value_name = next(opt for opt in options if opt.startswith('*')).lstrip('*')
             key_type_def = get_jadn_type_by_name(jadn_types, key_name)
             value_type_def = get_jadn_type_by_name(jadn_types, value_name)
             if key_type_def:

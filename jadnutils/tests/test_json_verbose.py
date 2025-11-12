@@ -293,6 +293,86 @@ def test_arrayof():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json
 
+def test_mapof_list():
+    jadn_schema =  {
+    "meta": {
+        "roots": ["MapOf-Name"]
+    },
+    "types": [
+        ["MapOf-Name", "MapOf", ["+Integer", "*Record-Name", "q"], "", []],
+        ["Record-Name", "Record", [], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "MapOf-Name": [1, {
+        "field_value_1": "a",
+        "field_value_2": "b"
+        }, 2, {
+        "field_value_1": "c",
+        "field_value_2": "d"
+        }, 3, {
+        "field_value_1": "e",
+        "field_value_2": "f"
+        }]
+    }
+
+    compact_json = {"MapOf-Name": [1, ["a", "b"], 2, ["c", "d"], 3, ["e", "f"]]}
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
+def test_mapof_dict():
+    jadn_schema = {
+    "meta": {
+        "roots": ["MapOf-Name"]
+    },
+    "types": [
+        ["MapOf-Name", "MapOf", ["*Record-Name", "+String", "q"], "", []],
+        ["Record-Name", "Record", [], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "MapOf-Name": {
+        "a": {
+        "field_value_1": "1",
+        "field_value_2": "2"
+        },
+        "b": {
+        "field_value_1": "3",
+        "field_value_2": "4"
+        },
+        "c": {
+        "field_value_1": "5",
+        "field_value_2": "6"
+        }
+    }
+    }
+
+    compact_json = {
+    "MapOf-Name": {
+        "a": ["1", "2"],
+        "b": ["3", "4"],
+        "c": ["5", "6"]
+    }
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
 def test_choice_enumerated():
     jadn_schema = {
     "meta": {

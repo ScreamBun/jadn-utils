@@ -167,6 +167,25 @@ def has_key_link(type_def):
         return True
     return False
 
+def handle_mapof_enum_key(jadn_types, mapof_type_def, key_type_def, value_type):
+    """
+    A Mapof with an enum key becomes a Map with field names from the enum values and type of value type
+    """
+    if not jadn_types or not mapof_type_def or not key_type_def or not value_type:
+        raise ValueError("Error during MapOf enum key processing. One or more args is None.")
+
+    try:
+        map_fields = []
+        field_names = [child[1] for child in get_children(key_type_def)]
+        for idx, name in enumerate(field_names):
+            field_def = [idx, name, value_type, ["[0"], ""]
+            map_fields.append(field_def)
+        
+        map_type_def = [mapof_type_def[0], "Map", [], mapof_type_def[3], map_fields]
+        return map_type_def
+    except Exception as e:
+        raise ValueError(f"Error during MapOf enum key processing: {e}")
+
 def get_field_by_data(jadn_types, data):
     """
     Retrive a field definition by its data from jadn_types
