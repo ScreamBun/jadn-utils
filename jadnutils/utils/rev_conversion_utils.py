@@ -118,7 +118,7 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                 options = get_options(true_curr_type)
                 isID = True if any(opt for opt in options if opt == "=") else False
 
-                if value is not None and isinstance(value, get_python_type(jadn_types, child, isID)):
+                if value is not None and isinstance(value, get_python_type(jadn_types, child, isID, value=value)):
                     # Case: field_type has been converted to ArrayOf in JADN types
                     new_type = get_jadn_type_by_name(jadn_types, key)
                     if new_type and get_type(new_type) == "ArrayOf":
@@ -209,7 +209,7 @@ def valid_children_length(jadn_types, type_def, json_obj):
             true_type_type = get_options(true_type_def)[0].lstrip('*')
             if true_type_type and len(keys) > 1:
                 # if key instances are not all of key type that type, not correct type
-                return all(isinstance(k, get_python_type(jadn_types, type_def, direct_type=true_type_type)) for k in keys)
+                return all(isinstance(k, get_python_type(jadn_types, type_def, direct_type=true_type_type, value=k)) for k in keys)
         
         true_type_children = get_children(true_type_def) if true_type_type in STRUCTURED_TYPES else [] # Enum and Choice children should not all be counted
         required_children = [child for child in true_type_children if '[0' not in get_options(child)]
@@ -284,7 +284,7 @@ def get_jadn_type_by_name(jadn_types, name):
 
     return None
 
-def get_python_type(jadn_types, field, id = False, direct_type = None):
+def get_python_type(jadn_types, field, id = False, direct_type = None, value = None):
     """
     Map JADN types to Python types.
     """
@@ -303,20 +303,26 @@ def get_python_type(jadn_types, field, id = False, direct_type = None):
         "ArrayOf": list,
     }
 
+    options = get_options(field)
+
     # Skip all the logic, just want to get the python equivalent of a JADN Type
     if direct_type:
         return type_mapping.get(direct_type, object)
 
     true_type = get_type(field)
+    true_options = options
+    true_children = get_children(field)
     if true_type not in type_mapping:
-        true_type = get_type(get_true_type_def(jadn_types, field))
+        true_type_def = get_true_type_def(jadn_types, field)
+        true_type = get_type(true_type_def)
+        true_options = get_options(true_type_def)
+        true_children = get_children(true_type_def)
 
     if true_type not in type_mapping:
         return None
 
     # Check for multiplicity
     if true_type in PRIMITIVE_TYPES:
-        options = get_options(field)
         if options:
             # If any item in options includes '[#' or ']#' += '[0', return true
             multiplicities = [opt for opt in options if opt.startswith('[') or opt.startswith(']')]
@@ -330,6 +336,13 @@ def get_python_type(jadn_types, field, id = False, direct_type = None):
                 if (min_mult and min_mult != '0') or (max_mult and max_mult != '1'):
                     jadn_types.append([field[1], "ArrayOf", ['*' + true_type], "", []])
                     return list
+
+    # Handle untagged choices
+    if value and true_type == "Choice" and any(opt for opt in true_options if opt == "CO" or opt == "CA" or opt == "CX"):
+        for child in true_children:
+            if isinstance(value, get_python_type(jadn_types, child, value=value)):
+                new_type = get_type(child)
+                return type_mapping.get(new_type, object)
 
     try:
         return type_mapping.get(true_type, object)

@@ -332,6 +332,66 @@ def test_choice_enumerated():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json
 
+def test_choice_combine():
+    jadn_schema = {
+    "meta": {
+        "title": "JADN Schema Start Up Template",
+        "package": "http://JADN-Schema-Start-Up-Template-URI",
+        "roots": ["Choices", "Choice-Regular", "Choice-Combine", "Choice-Combine-Complex"]
+    },
+    "types": [
+        ["Choices", "Record", [], "", [
+            [1, "choice_combine", "Choice-Combine", [], ""],
+            [2, "choice_regular", "Choice-Regular", [], ""],
+            [3, "choice_combine_complex", "Choice-Combine-Complex", [], ""]
+        ]],
+        ["Choice-Combine", "Choice", ["CO"], "", [
+            [1, "string_choice", "String", ["N"], ""],
+            [2, "integer_choice", "Integer", [], ""]
+        ]],
+        ["Choice-Regular", "Choice", [], "", [
+            [1, "string_choice_2", "String", [], ""],
+            [2, "integer_choice_2", "String", [], ""]
+        ]],
+        ["Choice-Combine-Complex", "Choice", ["CO"], "", [
+            [1, "field_value_1", "Basic-Record", [], ""],
+            [2, "field_value_2", "String", ["N"], ""]
+        ]],
+        ["Basic-Record", "Record", [], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0] # Choices
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "Choices": {
+        "choice_combine": "string_a",
+        "choice_regular": {
+        "string_choice_2": "string_b"
+        },
+        "choice_combine_complex": {
+        "field_value_1": "c",
+        "field_value_2": "d"
+        }
+    }
+    }
+
+    compact_json = {
+    "Choices": ["string_a", {
+        "string_choice_2": "string_b"
+        }, {
+        "field_value_1": "c",
+        "field_value_2": "d"
+        }]
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
 def test_enum_derived():
     jadn_schema = {
     "meta": {
