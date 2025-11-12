@@ -57,9 +57,7 @@ j_schema = {
         [4, "audio_format", "Audio-Format", [], "format of the digital audio"],
         [5, "featured_artist", "Artist", ["q", "[0", "]0"], "notable guest performers"],
         [6, "track_art", "Image", ["[0"], "each track can have optionally have individual artwork"],
-        [7, "genre", "Genre", [], ""],
-        [8, "artists", "Artists", [], ""],
-        [9, "lyrics", "Lyrics", [], ""]
+        [7, "genre", "Genre", [], ""]
       ]],
     ["Audio-Format", "Enumerated", [], "can only be one, but can extend list", [
         [1, "MP3", ""],
@@ -79,12 +77,6 @@ j_schema = {
         [6, "classical", ""],
         [7, "spoken_word", ""]
       ]],
-    ["File-Path", "String", [], "local storage location of file with directory path from root, filename, and extension"],
-    ["Artists", "Array", [], "", [
-        [1, "name", "String", [], ""],
-        [2, "company", "String", [], ""]
-      ]],
-    ["Lyric", "String", [], "", []],
-    ["Lyrics", "ArrayOf", ["*Lyric"], "", []]
+    ["File-Path", "String", [], "local storage location of file with directory path from root, filename, and extension"]
   ]
 }

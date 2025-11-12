@@ -5,9 +5,14 @@ import json
 from jadnutils.utils.rev_conversion_utils import compact_to_verbose, get_real_type_order
 from jadnutils.utils.rev_conversion_utils import get_jadn_type_by_name
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
+
 from music_lib_compact_data import j_data
 from music_lib import j_schema
 from music_lib_data import j_data as verbose_j_data
+
+from schema_classes import j_schema as schema_classes_schema
+from schema_classes_data import j_data as schema_classes_data
+from schema_classes_compact_data import j_data as schema_classes_compact_j_data
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
 
@@ -374,3 +379,16 @@ def test_enum_derived():
     }
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == expected_json
+
+def test_schema_classes():
+    json_data_compact = schema_classes_compact_j_data
+    json_data_expected = schema_classes_data
+    jadn_schema = schema_classes_schema
+
+    jadn_types = jadn_schema.get("types", {})
+    root_name = jadn_schema.get("meta", {}).get("roots", [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+    verbose_output = compact_to_verbose(ordered_types, json_data_compact, root_def)
+    write_verbose_output(verbose_output, "schema-classes-verbose.json")
+    assert verbose_output == json_data_expected
