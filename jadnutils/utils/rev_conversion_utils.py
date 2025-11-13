@@ -50,12 +50,17 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
             # Make sure type_def[4] exists
             type_def[4] = reconcile_children(type_def)[4]
             for idx, (field_num, field_name, field_type, _, _) in enumerate(type_def[4]):
-                field_value = json_obj.get(field_name)
+                # Check for ID
+                hasID = True if len([opt for opt in options if opt == "="]) > 0 else False
+                field_value = json_obj.get(field_name) if not hasID else json_obj.get(str(field_num))
                 if field_value is not None:
                     field_type_def = get_jadn_type_by_name(jadn_types, field_type)
                     verbose_value = compact_to_verbose(jadn_types, field_value, field_type_def)
                     if verbose_value is not None:
-                        result[field_name] = verbose_value
+                        if hasID:
+                            result[str(field_num)] = verbose_value
+                        else:
+                            result[field_name] = verbose_value
         except Exception as e:
             raise ValueError(f"Type Definition {type_def} has insufficient fields to enumerate. {e}")
                     

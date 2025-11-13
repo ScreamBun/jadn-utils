@@ -807,6 +807,76 @@ def test_tag_id():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
+def test_map_id():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Map-Name"]
+    },
+    "types": [
+        ["Map-Name", "Map", ["="], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""],
+            [3, "field_value_3", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "Map-Name": {
+        "1": "a",
+        "2": "b",
+        "3": "c"
+    }
+    }
+
+    compact_json = {
+    "Map-Name": {
+        "1": "a",
+        "2": "b",
+        "3": "c"
+    }
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
+def test_optional_fields():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Record-Name"]
+    },
+    "types": [
+        ["Record-Name", "Record", [], "", [
+            [1, "req_1", "String", [], ""],
+            [2, "req_2", "String", [], ""],
+            [3, "opt_1", "String", ["[0"], ""],
+            [4, "req_3", "String", [], ""],
+            [5, "opt_2", "String", ["[0"], ""],
+            [6, "opt_3", "String", ["[0"], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "Record-Name": {
+        "req_1": "a",
+        "req_2": "b",
+        "req_3": "c",
+        "opt_2": "d"
+    }
+    }
+
+    compact_json = {"Record-Name": ["a", "b", "c", "d"]}
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
 ########## TEST EXAMPLE SCHEMAS
 def test_schema_classes():
     json_data_compact = schema_classes_compact_j_data
