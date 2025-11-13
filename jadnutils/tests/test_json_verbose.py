@@ -843,6 +843,66 @@ def test_map_id():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
+def test_choice_id():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Choice-Name"]
+    },
+    "types": [
+        ["Choice-Name", "Choice", ["="], "", [
+            [1, "field_value_1", "String", [], ""],
+            [2, "field_value_2", "String", [], ""],
+            [3, "field_value_3", "String", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+ 
+    verbose_json = {
+    "Choice-Name": {
+        "2": "b"
+    }
+    }
+
+    compact_json = {
+    "Choice-Name": {
+        "2": "b"
+    }
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
+def test_enum_id():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Enum-Name"]
+    },
+    "types": [
+        ["Enum-Name", "Enumerated", ["="], "", [
+            [1, "choice_a", ""],
+            [2, "choice_b", ""],
+            [3, "choice_c", ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+    root_name = jadn_schema.get('meta', {}).get('roots', [None])[0]
+    root_def = get_jadn_type_by_name(jadn_types, root_name)
+    ordered_types = get_real_type_order(jadn_types, [], root_def)
+
+    verbose_json = {
+    "Enum-Name": 1
+    }
+
+    compact_json = {
+    "Enum-Name": 1
+    }
+
+    assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
+
 def test_optional_fields():
     jadn_schema = {
     "meta": {
