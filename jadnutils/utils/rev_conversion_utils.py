@@ -255,7 +255,7 @@ def valid_children_length(jadn_types, type_def, json_obj):
     """
     Check if number of children in type def matches numbers of keys in json_obj
     """
-    if not type_def or not json_obj:
+    if type_def is None or json_obj is None:
         return False
     
     try:
@@ -353,7 +353,7 @@ def get_python_type(jadn_types, field, id = False, direct_type = None, value = N
         "Integer": int,
         "Number": float,
         "Boolean": bool,
-        "Binary": bytes,
+        "Binary": str,
         "Record": list, # Compact changes records to lists
         "Enumerated": int if id else str,
         "Choice": dict,
