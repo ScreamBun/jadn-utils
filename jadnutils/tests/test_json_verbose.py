@@ -4,6 +4,7 @@ import json
 
 from jadnutils.utils.rev_conversion_utils import compact_to_verbose, get_real_type_order
 from jadnutils.utils.rev_conversion_utils import get_jadn_type_by_name
+from jadnutils.json.convert_verbose import convert_to_verbose
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
 
 from music_lib_compact_data import j_data
@@ -15,6 +16,15 @@ from schema_classes_data import j_data as schema_classes_data
 from schema_classes_compact_data import j_data as schema_classes_compact_j_data
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
+
+def test_convert_verbose():
+    jadn_schema = j_schema
+    json_obj = j_data
+    convert_from = 'compact'
+    root = 'Library'
+
+    verbose_output = convert_to_verbose(jadn_schema, json_obj, convert_from, root)
+    assert verbose_output == verbose_j_data
 
 def write_verbose_output(verbose_output, filename):
     """
