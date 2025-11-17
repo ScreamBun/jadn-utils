@@ -1,6 +1,5 @@
 from typing import Union
 from datetime import datetime
-import time
 import isodate
 from dateutil import parser
 import base64

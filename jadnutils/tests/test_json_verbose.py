@@ -913,6 +913,7 @@ def test_enum_id():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
+# TODO: Fix after discussion on optional fields with customer
 def test_optional_fields():
     jadn_schema = {
     "meta": {
@@ -935,15 +936,17 @@ def test_optional_fields():
     ordered_types = get_real_type_order(jadn_types, [], root_def)
 
     verbose_json = {
-    "Record-Name": {
-        "req_1": "a",
-        "req_2": "b",
-        "req_3": "c",
-        "opt_2": "d"
-    }
+        "Record-Name": {
+            "req_1": "a",
+            "req_2": "b",
+            "req_3": "c",
+            "opt_2": "d"
+        }
     }
 
     compact_json = {"Record-Name": ["a", "b", "c", "d"]}
+
+    test = compact_to_verbose(ordered_types, compact_json, root_def)
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 

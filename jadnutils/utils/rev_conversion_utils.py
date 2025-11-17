@@ -1,6 +1,5 @@
-from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def,\
-     get_parent, get_inherited_fields, get_key_from_link, has_key_link, handle_mapof_enum_key
-from jadnutils.utils.consts import CORE_TYPES, PRIMITIVE_TYPES, STRUCTURED_TYPES
+from jadnutils.utils.jadn_utils import get_type, get_children, get_options, get_true_type_def, get_inherited_fields, get_key_from_link, has_key_link, handle_mapof_enum_key
+from jadnutils.utils.consts import PRIMITIVE_TYPES, STRUCTURED_TYPES
 
 def compact_to_verbose(jadn_types, json_obj, type_def):
     """
