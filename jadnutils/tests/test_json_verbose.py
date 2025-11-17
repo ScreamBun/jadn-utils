@@ -2,7 +2,8 @@ import os
 import sys
 import json
 
-from jadnutils.utils.rev_conversion_utils import compact_to_verbose, get_real_type_order
+from jadnutils.utils.rev_conversion_utils import get_real_type_order
+from jadnutils.json.convert_verbose import compact_to_verbose
 from jadnutils.utils.rev_conversion_utils import get_jadn_type_by_name
 from jadnutils.json.convert_verbose import convert_to_verbose
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))

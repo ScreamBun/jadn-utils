@@ -27,6 +27,8 @@ DATE_FORMAT = "%Y-%m-%d"
 CBOR = "cbor"
 JSON = "json"
 XML = "xml"
+COMPACT_CONST = "compact"
+CONCISE_CONST = "concise"
 
 """
 Conversion Constants

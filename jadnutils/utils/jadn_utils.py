@@ -86,7 +86,7 @@ def get_inherited_fields(jadn_types, j_type, j_fields):
     j_fields is the current list of fields to which inherited fields will be added
     
     """
-    parent = [opt for opt in get_options(j_type) if opt.startswith('e') or opt.startswith('r')]
+    parent = [opt for opt in get_options(j_type) if opt.startswith(OPTION_ID["extends"]) or opt.startswith(OPTION_ID["restricts"])]
 
     if parent and isinstance(parent, list):
         clean_parent = parent[0][1:]
@@ -96,13 +96,13 @@ def get_inherited_fields(jadn_types, j_type, j_fields):
         if parent_field:
             children = get_children(parent_field)
 
-            if opt == 'e':  # extends
+            if opt == OPTION_ID["extends"]:  # extends
                 for child in children:
                     idx = child[0]
                     if idx not in [f[0] for f in j_fields]:
                         # overwrite fields
                         j_fields.append(child)
-            elif opt == 'r':  # restricts
+            elif opt == OPTION_ID["restricts"]:  # restricts
                 # Filter inherited fields so that new fields aren't added
                 updated_fields = []
                 for inherited_field in j_fields:
@@ -118,7 +118,7 @@ def get_inherited_fields(jadn_types, j_type, j_fields):
                         # overwrite fields
                         j_fields.append(child)
 
-            grandparent = [opt for opt in get_options(parent_field) if opt.startswith('e') or opt.startswith('r')]
+            grandparent = [opt for opt in get_options(parent_field) if opt.startswith(OPTION_ID["extends"]) or opt.startswith(OPTION_ID["restricts"])]
 
             if grandparent and isinstance(grandparent, list) and len(grandparent) > 0:
                 j_fields.extend(get_inherited_fields(jadn_types, parent_field, j_fields))
@@ -205,7 +205,7 @@ def get_field_by_data(jadn_types, data):
     for jadn_type in jadn_types:
         found = True
         children = list(get_children(jadn_type) or [])
-        handleInheritance = len([opt for opt in get_options(jadn_type) if opt.startswith('e') or opt.startswith('r')]) > 0
+        handleInheritance = len([opt for opt in get_options(jadn_type) if opt.startswith(OPTION_ID["extends"]) or opt.startswith(OPTION_ID["restricts"])]) > 0
         if handleInheritance: 
             children = get_inherited_fields(jadn_types, jadn_type, children)
         if children and isinstance(children, list) and len(children) > 0 and not isinstance(children[0], list):
