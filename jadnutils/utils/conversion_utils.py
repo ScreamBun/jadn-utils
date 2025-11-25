@@ -1,8 +1,9 @@
 import os
 import json
 import pandas as pd
-from jadnutils.utils.jadn_utils import get_field_by_data, get_type, get_field_from_struct, get_children, get_options, get_true_type_def
+from jadnutils.utils.jadn_utils import get_field_by_data, get_inherited_fields, get_type, get_field_from_struct, get_children, get_options, get_true_type_def
 from jadnutils.utils.consts import CONCISE_IGNORE_FORMATS
+from jadnutils.utils.rev_conversion_utils import get_python_type
 
 ############### HTML Convert Utils ###############
 def build_type_summary_html(name, type_val, options, description):
@@ -104,20 +105,62 @@ def get_theme_css():
 		return ''
 
 ############### JSON Convert Utils ###############
+def insert_null_values(jadn_types, field, children, json_vals):
+	"""
+	Insert null values for missing fields in json_obj based on children definitions.
+	"""
+
+	if not field or not children:
+		return json_vals
+
+	# Check for inherited fields
+	inherited_fields = get_inherited_fields(jadn_types, field, children)
+	if inherited_fields and isinstance(inherited_fields, list):
+		children = inherited_fields
+
+	if not children or not isinstance(children, list):
+		return json_vals
+
+	if isinstance(json_vals, list):
+		for idx, child in enumerate(children):
+			json_val = json_vals[idx] if idx < len(json_vals) else None
+
+			if json_val is None:
+				json_vals.insert(idx, None)
+				continue
+		
+			if isinstance(json_val, get_python_type(jadn_types, child)):
+				continue
+
+			json_vals.insert(idx, None)
+	elif isinstance(json_vals, dict):
+		for child in children:
+			if len(child) > 1:
+				field_name = child[1]
+				if field_name not in json_vals:
+					json_vals[field_name] = None
+
+	return json_vals
+
 def serialize_as_compact(jadn_types, json_obj):
 	"""
 	Serialize JSON object to compact representation.
 	Example: {"a": 1, "b": 2} => [1, 2]
 	"""
+	field = get_field_by_data(jadn_types, json_obj)
+	type_def = get_true_type_def(jadn_types, field)
+	children = get_children(type_def)
+	type = get_type(type_def)
 	if isinstance(json_obj, dict): # {a:1, b:2}
-		field = get_field_by_data(jadn_types, json_obj)
-		type = get_type(field)
 		if type == "Record":
-			return [serialize_as_compact(jadn_types, value) for value in json_obj.values()]
+			new_json_obj = insert_null_values(jadn_types, field, children, list(json_obj.values()))
+			return [serialize_as_compact(jadn_types, value) for value in new_json_obj]
 		else:
-			return {key: serialize_as_compact(jadn_types, value) for key, value in json_obj.items()}
+			new_json_obj = insert_null_values(jadn_types, field, children, json_obj)
+			return {key: serialize_as_compact(jadn_types, value) for key, value in new_json_obj.items()}
 	elif isinstance(json_obj, list): # [{a:1, b:2}]
-		return [serialize_as_compact(jadn_types, item) for item in json_obj]
+		new_json_obj = insert_null_values(jadn_types, field, children, json_obj)
+		return [serialize_as_compact(jadn_types, item) for item in new_json_obj]
 	else: # value base case
 		return json_obj
 

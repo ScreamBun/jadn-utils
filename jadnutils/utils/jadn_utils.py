@@ -272,7 +272,7 @@ def get_true_type_def(jadn_types, field):
     if get_type(type_def) in CORE_TYPES:
         return type_def
     
-    return get_true_type(jadn_types, type_def)
+    return get_true_type_def(jadn_types, type_def)
 
 def get_field_from_struct(struct_field, value, id = False):
     """

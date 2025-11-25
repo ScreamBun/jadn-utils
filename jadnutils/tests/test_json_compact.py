@@ -39,7 +39,7 @@ def test_compact_serialize():
                 [1, "name", "String", [], ""],
                 [2, "id", "String", [], ""],
                 [3, "dob", "String", [], ""],
-                [4, "weight", "String", ["[0"], ""]
+                [4, "weight", "Integer", ["[0"], ""]
             ]]
         ]
     }
@@ -58,7 +58,7 @@ def test_compact_serialize():
     
     expected_json = [
         ["Bob", "K193-3498-234", "the 4th of July 1990", 79546],
-        ["Alice", "B239-5921-348", "the 27th of June 1982"]
+        ["Alice", "B239-5921-348", "the 27th of June 1982", None]
     ]
 
     assert serialize_as_compact(jadn_types, nested_json) == expected_json
@@ -270,4 +270,133 @@ def test_concise_serialize_inheritance_recursive():
     }
 
     expected_json = {"Extend-2": ["1", "2", "3", "4", "5", "6"]}
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
+
+def test_compact_serialize_null_vals():
+    jadn_schema = {
+        "types": [
+            ["Person", "Record", [], "", [
+                [1, "name", "String", [], ""],
+                [2, "id", "String", [], ""],
+                [3, "dob", "String", [], ""],
+                [4, "weight", "Integer", ["[0"], ""]
+            ]]
+        ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = { 
+        'name': 'Alice',
+        'id': 'B239-5921-348',
+        'dob': 'the 27th of June 1982'
+    }
+
+    expected_json = ['Alice', 'B239-5921-348', 'the 27th of June 1982', None]
+
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
+
+def test_compact_serialize_null_vals_2():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Map-Name"]
+    },
+    "types": [
+        ["Map-Name", "Map", [], "", [
+            [1, "record_1", "Record-Name", [], ""],
+            [2, "record_2", "Record-Name", [], ""],
+            [3, "record_3_optional", "Record-Name", ["[0"], ""]
+        ]],
+        ["Record-Name", "Record", [], "", [
+            [1, "str_val_optional", "String", ["[0"], ""],
+            [2, "int_val", "Integer", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+        "record_1": {
+        "int_val": 2
+        },
+        "record_2": {
+        "str_val_optional": "test",
+        "int_val": 1
+        },
+        "record_3_optional": {
+        "str_val_optional": "test2",
+        "int_val": 2
+        }
+    }
+    expected_json = {
+        "record_1": [None, 2],
+        "record_2": ["test", 1],
+        "record_3_optional": ["test2", 2]
+    }
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
+
+def test_compact_serialize_null_vals_3():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Map-Name"]
+    },
+    "types": [
+        ["Map-Name", "Map", [], "", [
+            [1, "record_1", "Record-Name", [], ""],
+            [2, "record_2", "Record-Name", [], ""],
+            [3, "record_3_optional", "Record-Name", ["[0"], ""]
+        ]],
+        ["Record-Name", "Record", [], "", [
+            [1, "str_val_optional", "String", ["[0"], ""],
+            [2, "int_val", "Integer", [], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+        "record_1": {
+        "int_val": 2
+        },
+        "record_2": {
+        "str_val_optional": "test",
+        "int_val": 1
+        }
+    }
+    expected_json = {
+        "record_1": [None, 2],
+        "record_2": ["test", 1],
+        "record_3_optional": None
+    }
+    assert serialize_as_compact(jadn_types, nested_json) == expected_json
+
+def test_compact_serialize_null_vals_4():
+    jadn_schema = {
+    "meta": {
+        "roots": ["Map-Name"]
+    },
+    "types": [
+        ["Map-Name", "Map", [], "", [
+            [1, "record_1", "Record-Name", [], ""],
+            [2, "record_2", "Record-Name", [], ""],
+            [3, "record_3_optional", "Record-Name", ["[0"], ""]
+        ]],
+        ["Record-Name", "Record", [], "", [
+            [1, "str_val_optional", "String", ["[0"], ""],
+            [2, "int_val", "Integer", ["[0"], ""]
+        ]]
+    ]
+    }
+    jadn_types = jadn_schema.get('types', {})
+
+    nested_json = {
+        "record_1": {
+        },
+        "record_2": {
+        }
+    }
+    expected_json = {
+        "record_1": [None, None],
+        "record_2": [None, None],
+        "record_3_optional": None
+    }
     assert serialize_as_compact(jadn_types, nested_json) == expected_json

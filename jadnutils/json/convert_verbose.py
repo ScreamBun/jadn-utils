@@ -234,6 +234,8 @@ def compact_to_verbose(jadn_types, json_obj, type_def):
                         verbose_value = compact_to_verbose(jadn_types, value, field_type_def)
                         if verbose_value is not None:
                             result[key] = verbose_value
+                elif value is None:
+                    idx += 1
             return result
         elif curr_type == "ArrayOf":
             # Handle ArrayOf

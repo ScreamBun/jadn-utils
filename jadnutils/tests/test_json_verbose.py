@@ -77,7 +77,7 @@ def test_compact_to_verbose():
         "types": [
             ["Record-Name", "Record", [], "", [
                 [1, "string_field", "String", [], ""],
-                [2, "int_field", "Integer", [], ""],
+                [2, "int_field", "Integer", ["[0"], ""],
             ]]
         ]
     }
@@ -86,11 +86,10 @@ def test_compact_to_verbose():
     root_def = get_jadn_type_by_name(jadn_types, root_name)
     ordered_types = get_real_type_order(jadn_types, [], root_def)
     
-    nested_json = ["test", 1]
+    nested_json = ["test", None]
 
     expected_json = {
-        "string_field": "test",
-        "int_field": 1
+        "string_field": "test"
     }
 
     assert compact_to_verbose(ordered_types, nested_json, root_def) == expected_json
@@ -914,7 +913,6 @@ def test_enum_id():
 
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
-# TODO: Fix after discussion on optional fields with customer
 def test_optional_fields():
     jadn_schema = {
     "meta": {
@@ -924,10 +922,10 @@ def test_optional_fields():
         ["Record-Name", "Record", [], "", [
             [1, "req_1", "String", [], ""],
             [2, "req_2", "String", [], ""],
-            [3, "opt_1", "String", ["[0"], ""],
+            [3, "opt_1", "Integer", ["[0"], ""],
             [4, "req_3", "String", [], ""],
-            [5, "opt_2", "String", ["[0"], ""],
-            [6, "opt_3", "String", ["[0"], ""]
+            [5, "opt_2", "Integer", ["[0"], ""],
+            [6, "opt_3", "Binary", ["[0"], ""]
         ]]
     ]
     }
@@ -936,19 +934,17 @@ def test_optional_fields():
     root_def = get_jadn_type_by_name(jadn_types, root_name)
     ordered_types = get_real_type_order(jadn_types, [], root_def)
 
+
+    compact_json = {"Record-Name": ["a", "b", None, "c", 5, None]}
+
     verbose_json = {
         "Record-Name": {
             "req_1": "a",
             "req_2": "b",
             "req_3": "c",
-            "opt_2": "d"
+            "opt_2": 5
         }
     }
-
-    compact_json = {"Record-Name": ["a", "b", "c", "d"]}
-
-    test = compact_to_verbose(ordered_types, compact_json, root_def)
-
     assert compact_to_verbose(ordered_types, compact_json, root_def) == verbose_json
 
 ########## TEST EXAMPLE SCHEMAS
