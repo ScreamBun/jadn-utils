@@ -58,7 +58,7 @@ def test_concise_serialize_gyearmonth():
     
     expected_json = [
         ["Bob", "K193-3498-234", 646804800, 79546],
-        ["Alice", "B239-5921-348", 391752000]
+        ["Alice", "B239-5921-348", 391752000, None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -93,7 +93,7 @@ def test_concise_serialize_gmonthday():
     
     expected_json = [
         ["Bob", "K193-3498-234", 79329600, 79546],
-        ["Alice", "B239-5921-348", 76651200]
+        ["Alice", "B239-5921-348", 76651200, None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -128,7 +128,7 @@ def test_concise_serialize_daytimeduration():
     
     expected_json = [
         ["Bob", "K193-3498-234", 131445, 79546],
-        ["Alice", "B239-5921-348", 22500]
+        ["Alice", "B239-5921-348", 22500, None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -163,7 +163,7 @@ def test_concise_serialize_yearmonthduration():
     
     expected_json = [
         ["Bob", "K193-3498-234", 30, 79546],
-        ["Alice", "B239-5921-348", 15]
+        ["Alice", "B239-5921-348", 15, None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -198,7 +198,7 @@ def test_concise_serialize_gyear():
     
     expected_json = [
         ["Bob", "K193-3498-234", 631170000, 79546],
-        ["Alice", "B239-5921-348", 378709200]
+        ["Alice", "B239-5921-348", 378709200, None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -315,7 +315,7 @@ def test_concise_serialize_ipv4addr():
     
     expected_json = [
         ["Bob", "K193-3498-234", '3139322e3136382e312e313030', 79546],
-        ["Alice", "B239-5921-348", '31302e302e302e31']
+        ["Alice", "B239-5921-348", '31302e302e302e31', None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json
@@ -350,7 +350,7 @@ def test_concise_serialize_ipv6addr():
     
     expected_json = [
         ["Bob", "K193-3498-234", '323030313a306462383a383561333a303030303a303030303a386132653a303337303a37333334', 79546],
-        ["Alice", "B239-5921-348", '666538303a3a31']
+        ["Alice", "B239-5921-348", '666538303a3a31', None]
     ]
 
     assert serialize_as_concise(jadn_types, nested_json) == expected_json

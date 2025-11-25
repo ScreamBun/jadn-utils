@@ -112,6 +112,11 @@ def insert_null_values(jadn_types, field, children, json_vals):
 
 	if not field or not children:
 		return json_vals
+	
+	# Ignore fields if IPvNet
+	options = get_options(field)
+	if options and ("/ipv4-net" in options or "/ipv6-net" in options):
+		return json_vals
 
 	# Check for inherited fields
 	inherited_fields = get_inherited_fields(jadn_types, field, children)
@@ -180,6 +185,7 @@ def serialize_as_concise(jadn_types, json_obj):
 		field_options_dict = {child[1]: get_options(child) for child in children} if children else {}
 		convert_format_value(type_options_dict, json_obj)
 		convert_format_value(field_options_dict, json_obj)
+		json_obj = insert_null_values(jadn_types, field, children, json_obj)
 
 		if type == "Record":
 			return [serialize_as_concise(jadn_types, value) for value in json_obj.values()]
