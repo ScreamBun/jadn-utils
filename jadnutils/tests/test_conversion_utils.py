@@ -164,13 +164,23 @@ class TestConversionUtils:
         """Test serialize_as_compact with list."""
         json_obj = [{"name": "John"}, {"name": "Jane"}]
         
-        with patch('jadnutils.utils.conversion_utils.get_field_by_data') as mock_get_field:
+        def mock_field_by_data(types, data):
+            # Return None for the list itself, Person type for each dict
+            if isinstance(data, list):
+                return None
+            return sample_jadn_types[0]
+        
+        with patch('jadnutils.utils.conversion_utils.get_field_by_data', side_effect=mock_field_by_data):
             with patch('jadnutils.utils.conversion_utils.get_type') as mock_get_type:
-                mock_get_field.return_value = sample_jadn_types[0]
-                mock_get_type.return_value = "Record"
-                
-                result = serialize_as_compact(sample_jadn_types, json_obj)
-                assert result == [["John"], ["Jane"]]
+                with patch('jadnutils.utils.conversion_utils.get_true_type_def') as mock_get_true:
+                    with patch('jadnutils.utils.conversion_utils.get_children') as mock_get_children:
+                        mock_get_type.return_value = "Record"
+                        mock_get_true.return_value = sample_jadn_types[0]
+                        # Only return the first field to match the test data
+                        mock_get_children.return_value = [sample_jadn_types[0][4][0]]  # Just the "name" field
+                        
+                        result = serialize_as_compact(sample_jadn_types, json_obj)
+                        assert result == [["John"], ["Jane"]]
 
     def test_serialize_as_compact_primitive(self, sample_jadn_types):
         """Test serialize_as_compact with primitive value."""
@@ -190,7 +200,8 @@ class TestConversionUtils:
                     with patch('jadnutils.utils.conversion_utils.get_options') as mock_get_options:
                         mock_get_field.return_value = sample_jadn_types[0]
                         mock_get_type.return_value = "Record"
-                        mock_get_children.return_value = sample_jadn_types[0][4]
+                        # Only return the first two fields (name and age) to match test data
+                        mock_get_children.return_value = sample_jadn_types[0][4][:2]
                         mock_get_options.return_value = []
                         
                         result = serialize_as_concise(sample_jadn_types, json_obj)
