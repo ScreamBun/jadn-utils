@@ -7,6 +7,8 @@ from jadnutils.json.convert_compact import convert_to_compact
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_data"))
 from music_lib_data import j_data
 from music_lib import j_schema
+from oscal_assessment_plan_data import oscal_ap_data
+from oscal_assessment_plan import oscal_ap
 
 def write_compact_output(compact_output, filename):
     """
@@ -25,6 +27,11 @@ def test_convert_to_compact():
     json_data = j_data
     compact_json = convert_to_compact(j_schema, json_data)
     write_compact_output(compact_json, "music-library-compact.json")
+    assert compact_json
+
+def test_convert_to_compact_oscal_ap():
+    compact_json = convert_to_compact(oscal_ap, oscal_ap_data)
+    write_compact_output(compact_json, "oscal-assessment-plan-compact.json")
     assert compact_json
 
 #### TEST STRIP KEYS UTIL

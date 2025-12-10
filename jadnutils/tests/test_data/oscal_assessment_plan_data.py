@@ -1,0 +1,24 @@
+oscal_ap_data = {
+  "Root": {
+    "assessment-plan": {
+      "uuid": "c9cC1C50-1AfA-5C9e-adD2-56891d83Ba2F",
+      "metadata": {
+        "title": "Plan Title",
+        "last-modified": "2800-02-29T12:24:19.40-09:30",
+        "oscal-version": "1.1",
+        "remarks": "abcdefg",
+        "version": "1.1"
+      },
+      "reviewed-controls": {
+        "control-selections": [
+          {
+            "remarks": "remark"
+          }
+        ]
+      },
+      "import-ssp": {
+        "href": "https://www.test.com"
+      }
+    }
+  }
+}

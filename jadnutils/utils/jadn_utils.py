@@ -190,6 +190,7 @@ def get_field_by_data(jadn_types, data):
     """
     Retrive a field definition by its data from jadn_types
     """
+    field_values = []
     if isinstance(data, dict):
         field_names = set(data.keys())
         try:
@@ -216,7 +217,7 @@ def get_field_by_data(jadn_types, data):
         true_type_def = get_true_type_def(jadn_types, jadn_type)
 
         # Account for Enumerated
-        if children and len(children) > 0 and isinstance(children[0], list) and len(children[0]) == 3 and len(field_values) == 1:
+        if children and len(children) > 0 and isinstance(children[0], list) and len(children[0]) == 3 and field_values and len(field_values) == 1:
             if "=" in get_options(true_type_def): # Account for ID opt
                 children_names = [child[0] for child in children]
             else:
